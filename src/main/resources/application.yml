@@ -1,0 +1,20 @@
+
+
+spring:
+  datasource: #database
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: project
+    password: project
+    url: jdbc:mysql://localhost:3306/video_chat?createDatabaseIfNotExist=true
+  servlet:
+    multipart: #size for file
+      max-file-size: 100MB
+  jpa:
+    hibernate:
+      ddl-auto: update #auto update entity
+    generate-ddl: true
+    show-sql: true #show query sql
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true #load lazy
+        dialect: org.hibernate.dialect.MySQL8Dialect
