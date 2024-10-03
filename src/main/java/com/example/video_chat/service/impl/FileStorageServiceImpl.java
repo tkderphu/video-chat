@@ -25,25 +25,28 @@ public class FileStorageServiceImpl implements FileStorageService {
 
 
     @Override
-    public FileEntity save(MultipartFile file, FileType fileType) {
+    public void save(MultipartFile file, FileType fileType) {
         FileEntity fileEntity = new FileEntity();
         try{
-            String fileName = file.getOriginalFilename();
-            String uuid = UUID.randomUUID().toString();
-            String fileExtension = fileName.substring(fileName.lastIndexOf("."));
-            String newFileName = uuid + fileExtension;
-            Path filePath = rootLocation.resolve(Paths.get(fileName).normalize().toAbsolutePath());
+            fileType.createDirectoryIfNotExists();
+            String fileName = UUID.randomUUID().toString();
+
+            String fileExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            String newFileName = UUID.randomUUID().toString() + fileExtension;
+            Path filePath = Paths.get(fileType.getFolderPath()).resolve(newFileName).normalize();
             Files.copy(file.getInputStream(), filePath);
-            fileEntity.setName(newFileName);
+
+            fileEntity.setName(fileName);
             fileEntity.setUrl(filePath.toString());
-            return fileRepository.save(fileEntity);
-        } catch (IOException e) {
-            throw new RuntimeException();
+            fileRepository.save(fileEntity);
+        }catch (IOException e){
+            throw new RuntimeException("Unable to save file" + e.getMessage(), e);
         }
     }
 
     @Override
     public void delete(String url) {
+
         FileEntity fileEntity = fileRepository.findByUrl(url);
         if (fileEntity != null) {
             fileRepository.delete(fileEntity);
