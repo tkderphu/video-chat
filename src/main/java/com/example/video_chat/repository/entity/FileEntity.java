@@ -1,4 +1,4 @@
-package com.example.video_chat.model;
+package com.example.video_chat.repository.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -6,7 +6,6 @@ import jakarta.persistence.Id;
 
 @Entity
 public class FileEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

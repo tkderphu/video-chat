@@ -3,7 +3,6 @@ package com.example.video_chat.ControllerAdvice;
 import com.example.video_chat.exception.FileNotFoundException;
 import com.example.video_chat.model.ErrorRespondDTO;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
