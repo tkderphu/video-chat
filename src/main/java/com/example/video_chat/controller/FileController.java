@@ -57,14 +57,4 @@ public class FileController {
         }
     }
 
-    @DeleteMapping("/{url}")
-    public ResponseEntity<String> deleteFile(@PathVariable String url) {
-        try{
-            fileStorageService.delete(url);
-            return ResponseEntity.ok("File deleted successfully");
-        }
-        catch (Exception e){
-            return ResponseEntity.status(500).body("Failed to delete file");
-        }
-    }
 }
