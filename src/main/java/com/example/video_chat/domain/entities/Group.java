@@ -2,17 +2,18 @@ package com.example.video_chat.domain.entities;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "groups")
-public class Group extends Chat{
+@Table(name = "groups_chat")
+@DiscriminatorValue("GROUP")
+public class Group extends Chat {
+    @Column(name = "name")
     private String name;
     @ManyToMany
     @JoinTable(name = "conversation",
             joinColumns = @JoinColumn(name = "group_id"),
-    inverseJoinColumns = @JoinColumn(name = "user_id"))
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> members;
 
 
@@ -20,6 +21,11 @@ public class Group extends Chat{
         this.name = name;
         this.members = members;
     }
+
+    public Group() {
+
+    }
+
 
     public String getName() {
         return name;
@@ -37,5 +43,17 @@ public class Group extends Chat{
     @Override
     public String getImageRepresent() {
         return super.getImageRepresent();
+    }
+
+    @Override
+    public boolean getStatus() {
+        return this.members
+                .stream()
+                .anyMatch(s -> s.isOnline());
+    }
+
+    @Override
+    public boolean getType() {
+        return false;
     }
 }

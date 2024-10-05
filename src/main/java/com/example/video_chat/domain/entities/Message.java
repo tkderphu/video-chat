@@ -13,10 +13,11 @@ public class Message extends BaseEntity{
     @JoinColumn(name = "from_user_id")
     private User fromUser;
     private String content;
-
     @ManyToOne
     @JoinColumn(name = "chat_id")
     private Chat chat;
+
+    private boolean video;
 
     public Chat getChat() {
         return chat;
@@ -33,6 +34,14 @@ public class Message extends BaseEntity{
     public void setContent(String content) {
         ValidationUtils.checkField(content, 1);
         this.content = content;
+    }
+
+    public boolean isVideo() {
+        return video;
+    }
+
+    public void setVideo(boolean video) {
+        this.video = video;
     }
 
     public User getFromUser() {

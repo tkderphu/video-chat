@@ -1,11 +1,10 @@
 package com.example.video_chat.domain.entities;
 
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "chats")
+@Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "type")
 public class Chat extends BaseEntity{
 
@@ -16,4 +15,14 @@ public class Chat extends BaseEntity{
     public String getImageRepresent() {
         throw new UnsupportedOperationException();
     }
+
+    public boolean getStatus() {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean getType() { //true if chat to user else false
+        throw new UnsupportedOperationException();
+    }
+
+
 }

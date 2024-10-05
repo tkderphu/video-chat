@@ -6,8 +6,9 @@ import com.example.video_chat.domain.entities.Group;
 import com.example.video_chat.domain.entities.Message;
 import com.example.video_chat.domain.entities.User;
 import com.example.video_chat.domain.modelviews.request.GroupRequest;
-import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.request.GroupUpdateUserRequest;
+import com.example.video_chat.domain.modelviews.request.MessageDetailsRequest;
+import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.domain.modelviews.views.MessageModelView;
@@ -15,9 +16,13 @@ import com.example.video_chat.repository.ChatRepository;
 import com.example.video_chat.repository.MessageRepository;
 import com.example.video_chat.repository.UserRepository;
 import com.example.video_chat.service.IMessengerService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,11 +43,9 @@ public class MessengerServiceImpl implements IMessengerService {
 
 
     @Override
-    public ApiResponse<?> createMessage(MessageRequest request) {
-        User fromUser = this.userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("You aren't login"));
-
+    public ApiResponse<?> createMessage(MessageRequest request,
+                                        List<MultipartFile> files) {
+        User fromUser = getUser();
         Chat chat = this.chatRepository
                 .findById(request.getChatId())
                 .orElseThrow(() -> new RuntimeException("User who you wanted chat not exists"));
@@ -51,17 +54,14 @@ public class MessengerServiceImpl implements IMessengerService {
         message.setContent(request.getContent());
         message.setChat(chat);
         message.setFromUser(fromUser);
-
+        message.setVideo(request.isVideo());
         this.messageRepository.save(message);
         return new ApiResponse<>("created message", 200, 0, new MessageModelView(message));
     }
 
     @Override
     public ApiResponse<?> createConversation(GroupRequest request) {
-        User fromUser = userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
-
+        User fromUser = getUser();
         if (request == null || request.getUserIds().size() < 2) {
             throw new UnsupportedOperationException("Size of group must greater than 1");
         }
@@ -94,13 +94,50 @@ public class MessengerServiceImpl implements IMessengerService {
     }
 
     @Override
-    public ApiListResponse<MessageModelView> getMessageDetails() {
-        return null;
+    public ApiListResponse<MessageModelView> getMessageDetails(
+            MessageDetailsRequest request
+    ) {
+        User fromUser = getUser();
+        Page<Message> page = this.messageRepository.findAllMessage(
+                fromUser.getId(),
+                request.getChatId(),
+                request.isType() ? "USER" : "GROUP",
+                PageRequest.of(request.getPage() - 1, request.getLimit())
+        );
+
+        return new ApiListResponse<>(
+                "get details message of specific chat",
+                200,
+                0,
+                page.getTotalPages(),
+                request.getPage(),
+                request.getLimit(),
+                page.getContent()
+                        .stream()
+                        .map(MessageModelView::new)
+                        .collect(Collectors.toList())
+        );
+
+
     }
 
     @Override
-    public ApiListResponse<MessageModelView> getMessageGalleries() {
-        return null;
+    public ApiListResponse<MessageModelView> getMessageGalleries(int pageNumber, int limit) {
+        User fromUser = getUser();
+        Page<Message> page = this.messageRepository.findAllMessage(
+                fromUser.getId(),
+                PageRequest.of(pageNumber - 1, limit)
+        );
+        return new ApiListResponse<>(
+                "get all message of each user who you chatted recently",
+                200,
+                0,
+                page.getTotalPages(), pageNumber, limit,
+                page.getContent()
+                        .stream()
+                        .map(MessageModelView::new)
+                        .collect(Collectors.toList())
+        );
     }
 
     @Override
@@ -115,11 +152,18 @@ public class MessengerServiceImpl implements IMessengerService {
                         .orElseThrow(() -> new UnsupportedOperationException()))
                 .collect(Collectors.toSet());
 
-        if(request.isRemove()) {
+        if (request.isRemove()) {
             group.getMembers().removeAll(users);
         } else {
             group.getMembers().addAll(users);
         }
         return new ApiResponse<>("user manipulate group", 200, 0, null);
     }
+
+    private User getUser() {
+        return userRepository
+                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
+    }
 }
+
