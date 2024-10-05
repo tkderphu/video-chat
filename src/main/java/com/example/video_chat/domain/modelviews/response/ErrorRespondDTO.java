@@ -1,4 +1,4 @@
-package com.example.video_chat.model;
+package com.example.video_chat.domain.modelviews.response;
 
 import java.util.ArrayList;
 import java.util.List;
