@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -20,8 +21,15 @@ public class User extends Chat implements UserDetails {
     private String lastName;
     private boolean online;
 
+    @ManyToMany
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles;
+
     @ManyToMany(mappedBy = "members")
     private Set<Group> groups;
+
 
     public String getEmail() {
         return email;
@@ -47,7 +55,6 @@ public class User extends Chat implements UserDetails {
     }
 
     public void setPassword(String password) {
-        ValidationUtils.checkField(password, 8);
         this.password = password;
     }
 
@@ -65,9 +72,10 @@ public class User extends Chat implements UserDetails {
     }
 
     public void setLastName(String lastName) {
-        ValidationUtils.checkField(lastName, 3);
+
         this.lastName = lastName;
     }
+
 
     public boolean isOnline() {
         return online;

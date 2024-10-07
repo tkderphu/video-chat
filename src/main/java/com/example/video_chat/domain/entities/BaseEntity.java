@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @MappedSuperclass
 public class BaseEntity {
@@ -21,19 +22,17 @@ public class BaseEntity {
     @LastModifiedBy
     private String modifiedBy;
     @CreatedDate
-    private LocalDateTime createdDate;
+    private Date createdDate;
     @LastModifiedBy
-    private LocalDateTime modifiedDate;
+    private Date modifiedDate;
 
     public BaseEntity() {
 
     }
 
-    public BaseEntity(Long id,
-                      String createdBy,
+    public BaseEntity(Long id, String createdBy,
                       String modifiedBy,
-                      LocalDateTime createdDate,
-                      LocalDateTime modifiedDate) {
+                      Date createdDate, Date modifiedDate) {
         this.id = id;
         this.createdBy = createdBy;
         this.modifiedBy = modifiedBy;
@@ -65,19 +64,19 @@ public class BaseEntity {
         this.modifiedBy = modifiedBy;
     }
 
-    public LocalDateTime getCreatedDate() {
+    public Date getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
+    public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
 
-    public LocalDateTime getModifiedDate() {
+    public Date getModifiedDate() {
         return modifiedDate;
     }
 
-    public void setModifiedDate(LocalDateTime modifiedDate) {
+    public void setModifiedDate(Date modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
 }
