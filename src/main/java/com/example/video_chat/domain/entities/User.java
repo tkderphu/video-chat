@@ -11,8 +11,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@DiscriminatorValue("USER")
-public class User extends Chat implements UserDetails {
+public class User extends BaseEntity implements UserDetails{
 
     @Column(unique = true)
     private String email;
@@ -83,25 +82,5 @@ public class User extends Chat implements UserDetails {
 
     public void setOnline(boolean online) {
         this.online = online;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return this.firstName + " " + this.lastName;
-    }
-
-    @Override
-    public String getImageRepresent() {
-        return super.getImageRepresent();
-    }
-
-    @Override
-    public boolean getStatus() {
-        return this.online;
-    }
-
-    @Override
-    public boolean getType() {
-        return true;
     }
 }

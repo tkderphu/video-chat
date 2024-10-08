@@ -1,7 +1,7 @@
 package com.example.video_chat.domain.modelviews.request;
 
 public class MessageRequest {
-    private Long chatId;
+    private Long destId; //something when you haven't created chat yet then i will see destId is userId
     private String content;
     private boolean video;
     public MessageRequest() {
@@ -16,12 +16,12 @@ public class MessageRequest {
         this.video = video;
     }
 
-    public Long getChatId() {
-        return chatId;
+    public Long getDestId() {
+        return destId;
     }
 
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
+    public void setDestId(Long destId) {
+        this.destId = destId;
     }
 
     public String getContent() {

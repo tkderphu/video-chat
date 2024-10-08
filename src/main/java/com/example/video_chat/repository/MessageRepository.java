@@ -6,9 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
-
-import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
@@ -16,19 +13,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     /*
         This method select all messages of a specific conversation
      */
-    @Query(value = "select\n" +
-            "    m.*\n" +
-            "from chats c inner join messages m on c.id = m.chat_id\n" +
-            "    inner join users u on m.from_user_id = u.id\n" +
-            "where if(c.type = 'USER', (m.from_user_id = :fromId and m.chat_id = :chatId)\n" +
-            "      or (m.from_user_id = :chatId and m.chat_id = :fromId),\n" +
-            "      m.chat_id = :chatId)\n" +
-            "and c.type = :type",
-    nativeQuery = true)
-    Page<Message> findAllMessage(
-            @Param("fromId") Long fromId,
-            @Param("chatId") Long chatId,
-            @Param("type") String type,
+    Page<Message> findAllByChatId(
+            Long chatId,
             Pageable pageable
     );
 
@@ -39,18 +25,24 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
      */
     @Query(value = "select m.*\n" +
             "from messages m\n" +
-            "    inner join chats c on m.chat_id = c.id\n" +
-            "where if(c.type = 'USER',\n" +
-            "         (m.id in (select max(mx.id)\n" +
-            "                   from messages mx\n" +
-            "                   where mx.chat_id = :userId or mx.from_user_id = :userId\n" +
-            "                   group by mx.chat_id + mx.from_user_id)),\n" +
-            "         (m.id = (select max(mx.id)\n" +
-            "                  from messages mx\n" +
-            "                  where mx.chat_id = m.chat_id)\n" +
-            "             and :userId in (select con.user_id\n" +
-            "                      from conversation con\n" +
-            "                      where con.group_id = c.id)))\n" +
+            "         inner join (select max(mx.id)  as maxId,\n" +
+            "                            c.chat_type as chatType\n" +
+            "                     from messages mx\n" +
+            "                              inner join chat c\n" +
+            "                                         on mx.chat_id = c.id\n" +
+            "                     group by mx.chat_id, c.chat_type) as info\n" +
+            "                    on m.id = info.maxId\n" +
+            "where if(info.chatType = 'USER_CHAT',\n" +
+            "         exists(select 1\n" +
+            "                from chat c\n" +
+            "                where c.id = m.chat_id and\n" +
+            "                      c.user_one_id = :userId\n" +
+            "                   or c.user_two_id = :userId),\n" +
+            "         :userId in (select c.user_id\n" +
+            "                     from conversation c\n" +
+            "                     where c.group_id = (select cx.group_id\n" +
+            "                                         from chat cx\n" +
+            "                                         where cx.id = m.chat_id)))\n" +
             "order by m.created_date desc\n",
     nativeQuery = true)
     Page<Message> findAllMessage(@Param("userId") Long userId,

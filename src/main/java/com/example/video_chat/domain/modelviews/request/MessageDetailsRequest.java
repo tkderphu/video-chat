@@ -2,19 +2,11 @@ package com.example.video_chat.domain.modelviews.request;
 
 public class MessageDetailsRequest {
     private Long chatId;
-    private boolean type;
     private int page;
     private int limit;
 
     public MessageDetailsRequest() {}
 
-    public boolean isType() {
-        return type;
-    }
-
-    public void setType(boolean type) {
-        this.type = type;
-    }
 
     public Long getChatId() {
         return chatId;

@@ -1,10 +1,6 @@
 package com.example.video_chat.domain.entities;
 
-import com.example.video_chat.common.ValidationUtils;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "messages")
@@ -13,42 +9,38 @@ public class Message extends BaseEntity{
     @JoinColumn(name = "from_user_id")
     private User fromUser;
     private String content;
+    @Enumerated(EnumType.STRING)
+    private MessageType messageType;
+
     @ManyToOne
     @JoinColumn(name = "chat_id")
-    private Chat chat;
+    private BaseChat chat;
 
-    private boolean video;
-
-    public Chat getChat() {
-        return chat;
-    }
-
-    public void setChat(Chat chat) {
+    public Message(User fromUser, String content,
+                   MessageType messageType, BaseChat chat) {
+        this.fromUser = fromUser;
+        this.content = content;
+        this.messageType = messageType;
         this.chat = chat;
     }
 
-    public void setFromUser(User fromUser) {
-        this.fromUser = fromUser;
-    }
+    public Message() {
 
-    public void setContent(String content) {
-        ValidationUtils.checkField(content, 1);
-        this.content = content;
-    }
-
-    public boolean isVideo() {
-        return video;
-    }
-
-    public void setVideo(boolean video) {
-        this.video = video;
     }
 
     public User getFromUser() {
         return fromUser;
     }
 
+    public BaseChat getChat() {
+        return chat;
+    }
+
     public String getContent() {
         return content;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
     }
 }

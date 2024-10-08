@@ -5,9 +5,8 @@ import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "groups_chat")
-@DiscriminatorValue("GROUP")
-public class Group extends Chat {
+@Table(name = "group_members")
+public class Group extends BaseEntity {
     @Column(name = "name")
     private String name;
     @ManyToMany
@@ -33,27 +32,5 @@ public class Group extends Chat {
 
     public Set<User> getMembers() {
         return members;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return name;
-    }
-
-    @Override
-    public String getImageRepresent() {
-        return super.getImageRepresent();
-    }
-
-    @Override
-    public boolean getStatus() {
-        return this.members
-                .stream()
-                .anyMatch(s -> s.isOnline());
-    }
-
-    @Override
-    public boolean getType() {
-        return false;
     }
 }

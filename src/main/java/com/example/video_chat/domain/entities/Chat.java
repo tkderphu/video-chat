@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 @DiscriminatorColumn(name = "type")
 public class Chat extends BaseEntity{
 
+
     public String getDisplayName() {
         throw new UnsupportedOperationException();
     }
@@ -23,6 +24,5 @@ public class Chat extends BaseEntity{
     public boolean getType() { //true if chat to user else false
         throw new UnsupportedOperationException();
     }
-
 
 }
