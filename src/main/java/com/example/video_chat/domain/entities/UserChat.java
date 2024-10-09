@@ -53,4 +53,13 @@ public class UserChat extends BaseChat{
     public boolean isUserChat() {
         return true;
     }
+
+    @Override
+    public String chatPath() {
+        String path = "/topic/private/message/user/";
+        if(SystemUtils.getUsername().compareTo(userOne.getEmail()) == 0) {
+            return path + userTwo.getId();
+        }
+        return path + userOne.getId();
+    }
 }

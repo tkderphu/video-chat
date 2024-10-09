@@ -2,7 +2,6 @@ package com.example.video_chat.domain.modelviews.views;
 
 import com.example.video_chat.domain.entities.BaseChat;
 import com.example.video_chat.domain.entities.BaseEntity;
-import com.example.video_chat.domain.entities.Chat;
 
 public class ChatModelView extends BaseEntity {
     private String nameDisplay;

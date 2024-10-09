@@ -14,6 +14,7 @@ import com.example.video_chat.service.IMessengerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,14 +33,17 @@ public class MessengerServiceImpl implements IMessengerService {
     private final GroupRepository groupRepository;
     private final MessageRepository messageRepository;
     private final BaseChatRepository baseChatRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
     public MessengerServiceImpl(UserRepository userRepository,
                                 GroupRepository groupRepository,
                                 MessageRepository messageRepository,
-                                BaseChatRepository baseChatRepository) {
+                                BaseChatRepository baseChatRepository,
+                                SimpMessagingTemplate simpMessagingTemplate) {
         this.userRepository = userRepository;
         this.groupRepository= groupRepository;
         this.messageRepository = messageRepository;
         this.baseChatRepository = baseChatRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
 
@@ -63,7 +67,10 @@ public class MessengerServiceImpl implements IMessengerService {
                 baseChat
         );
         this.messageRepository.save(message);
-        return new ApiResponse<>("created message", 200, 0, new MessageModelView(message));
+
+        MessageModelView messageModelView = new MessageModelView(message);
+        this.simpMessagingTemplate.convertAndSend(baseChat.chatPath(), messageModelView);
+        return new ApiResponse<>("created message", 200, 0, messageModelView);
     }
 
     @Override

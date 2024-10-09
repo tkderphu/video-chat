@@ -1,6 +1,5 @@
 package com.example.video_chat.service.impl;
 
-import com.example.video_chat.domain.entities.Chat;
 import com.example.video_chat.domain.entities.Token;
 import com.example.video_chat.domain.entities.User;
 import com.example.video_chat.domain.modelviews.request.LoginRequest;
@@ -8,7 +7,6 @@ import com.example.video_chat.domain.modelviews.request.RegisterRequest;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.domain.modelviews.response.AuthResponse;
 import com.example.video_chat.handler.exception.GeneralException;
-import com.example.video_chat.repository.ChatRepository;
 import com.example.video_chat.repository.TokenRepository;
 import com.example.video_chat.repository.UserRepository;
 import com.example.video_chat.service.IAuthService;
@@ -25,18 +23,15 @@ public class AuthenServiceImpl implements IAuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
-    private final ChatRepository chatRepository;
     private final TokenRepository tokenRepository;
     @Value("${auth.token.expired-time}")
     private long expiredTime;
 
     public AuthenServiceImpl(UserRepository userRepository,
                              PasswordEncoder encoder,
-                             ChatRepository chatRepository,
                              TokenRepository tokenRepository) {
         this.userRepository = userRepository;
         this.encoder = encoder;
-        this.chatRepository = chatRepository;
         this.tokenRepository = tokenRepository;
     }
 
@@ -74,6 +69,7 @@ public class AuthenServiceImpl implements IAuthService {
 
     @Override
     public ApiResponse<?> register(RegisterRequest request) {
+	    //hell world;
         User user = new User();
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());

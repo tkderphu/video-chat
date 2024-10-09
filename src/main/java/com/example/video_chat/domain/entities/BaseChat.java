@@ -16,4 +16,5 @@ public abstract class BaseChat  extends BaseEntity {
     public abstract String getAvatar();
     public abstract boolean isOnline();
     public abstract boolean isUserChat();
+    public abstract String chatPath();
 }

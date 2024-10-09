@@ -40,4 +40,9 @@ public class GroupChat extends BaseChat{
     public boolean isUserChat() {
         return false;
     }
+
+    @Override
+    public String chatPath() {
+        return "/topic/private/message/group/" + this.group.getId();
+    }
 }
