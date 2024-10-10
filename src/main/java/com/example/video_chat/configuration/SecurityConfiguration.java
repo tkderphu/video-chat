@@ -90,7 +90,7 @@ class FilterRequest extends OncePerRequestFilter {
             if (optionToken.isPresent()) {
                 if (optionToken.get().getExpiredTime() >= System.currentTimeMillis()) {
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                            optionToken.get().getUser().getEmail(),
+                            optionToken.get().getUser().getUsername(),
                             null,
                             optionToken.get().getUser().getAuthorities()
                     );

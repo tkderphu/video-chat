@@ -1,15 +1,19 @@
 package com.example.video_chat.service.impl;
 
 import com.example.video_chat.common.SystemUtils;
-import com.example.video_chat.domain.entities.*;
+import com.example.video_chat.domain.entities.Conversation;
+import com.example.video_chat.domain.entities.Message;
+import com.example.video_chat.domain.entities.User;
 import com.example.video_chat.domain.modelviews.request.GroupRequest;
-import com.example.video_chat.domain.modelviews.request.GroupUpdateUserRequest;
 import com.example.video_chat.domain.modelviews.request.MessageDetailsRequest;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.domain.modelviews.views.MessageModelView;
-import com.example.video_chat.repository.*;
+import com.example.video_chat.handler.exception.GeneralException;
+import com.example.video_chat.repository.ConversationRepository;
+import com.example.video_chat.repository.MessageRepository;
+import com.example.video_chat.repository.UserRepository;
 import com.example.video_chat.service.IMessengerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,29 +24,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.example.video_chat.domain.entities.MessageType.TEXT;
+import static com.example.video_chat.domain.entities.Conversation.ConversationType.PRIVATE;
+import static com.example.video_chat.domain.entities.Conversation.ConversationType.PUBLIC;
+import static com.example.video_chat.domain.entities.Message.MessageType.TEXT;
+import static com.example.video_chat.domain.entities.Message.MessageType.VIDEO;
 
 @Service
 public class MessengerServiceImpl implements IMessengerService {
 
     private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
+    private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
-    private final BaseChatRepository baseChatRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+
     public MessengerServiceImpl(UserRepository userRepository,
-                                GroupRepository groupRepository,
+                                ConversationRepository conversationRepository,
                                 MessageRepository messageRepository,
-                                BaseChatRepository baseChatRepository,
                                 SimpMessagingTemplate simpMessagingTemplate) {
         this.userRepository = userRepository;
-        this.groupRepository= groupRepository;
+        this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
-        this.baseChatRepository = baseChatRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
@@ -52,32 +58,55 @@ public class MessengerServiceImpl implements IMessengerService {
     public ApiResponse<?> createMessage(MessageRequest request,
                                         List<MultipartFile> files) {
         User fromUser = getUser();
-        BaseChat baseChat = this.baseChatRepository.findById(request.getDestId())
+        Conversation conversation = this.conversationRepository
+                .findByUserId(request.getDestId())
                 .orElse(null);
-        if(baseChat == null) {
-            User anotherUser = this.userRepository.findById(request.getDestId())
-                    .orElseThrow(() -> new UsernameNotFoundException("user who you want to chat not exist"));
-            baseChat = new UserChat(fromUser, anotherUser);
-            this.baseChatRepository.save(baseChat);
+        if (conversation == null) {
+            conversation = new Conversation(
+                    new HashSet<>(Set.of(
+                            fromUser,
+                            new User(request.getDestId())
+                    )),
+                    PRIVATE
+            );
+            this.conversationRepository.save(conversation);
         }
+
         Message message = new Message(
                 fromUser,
                 request.getContent(),
-                TEXT,
-                baseChat
+                request.isVideo() ? VIDEO : TEXT,
+                conversation
         );
         this.messageRepository.save(message);
+        ApiResponse<MessageModelView> response = new ApiResponse<>(
+                "CREATE MESSAGE",
+                200,
+                0,
+                new MessageModelView(message)
+        );
+        refreshMessageToConversation(conversation, response);
+        return response;
 
-        MessageModelView messageModelView = new MessageModelView(message);
-        this.simpMessagingTemplate.convertAndSend(baseChat.chatPath(), messageModelView);
-        return new ApiResponse<>("created message", 200, 0, messageModelView);
+    }
+
+    private void refreshMessageToConversation(Conversation conversation,
+                                              ApiResponse<MessageModelView> response) {
+        this.simpMessagingTemplate.convertAndSend(
+                "/topic/private/conversation/chat/message/" + conversation.getId(),
+                response
+        );
+        this.simpMessagingTemplate.convertAndSend(
+                "/topic/private/conversation/gallery/message/" + conversation.getId(),
+                getMessageGalleries(0, 0)
+        );
     }
 
     @Override
     public ApiResponse<?> createConversation(GroupRequest request) {
         User fromUser = getUser();
         if (request == null || request.getUserIds().size() < 2) {
-            throw new UnsupportedOperationException("Size of group must greater than 1");
+            throw new GeneralException("Size of group must greater than 2");
         }
         Set<User> members = request.getUserIds()
                 .stream()
@@ -86,35 +115,39 @@ public class MessengerServiceImpl implements IMessengerService {
                 .collect(Collectors.toSet());
         members.add(fromUser);
 
-
-        BaseChat chat = new GroupChat(new Group(request.getName(), members));
-
-        this.baseChatRepository.save(chat);
-
-        Message message = new Message(
-                fromUser,
+        Conversation conversation = new Conversation(
+                request.getName(),
+                null,
+                members,
+                PUBLIC
+        );
+        this.conversationRepository.save(conversation);
+        Message message = new Message(fromUser,
                 String.format(
                         "------->%s created a group which was %s <-------",
-                        fromUser.getFirstName() + " " + fromUser.getLastName(),
+                        fromUser.getFullName(),
                         request.getName()
                 ),
                 TEXT,
-                chat
+                conversation
         );
         this.messageRepository.save(message);
-        return new ApiResponse<>(
+
+        ApiResponse<MessageModelView> response = new ApiResponse<>(
                 "created group",
-                200, 0,
+                200,
+                0,
                 new MessageModelView(message));
+        refreshMessageToConversation(conversation, response);
+        return response;
     }
 
     @Override
     public ApiListResponse<MessageModelView> getMessageDetails(
             MessageDetailsRequest request
     ) {
-        User fromUser = getUser();
-        Page<Message> page = this.messageRepository.findAllByChatId(
-                request.getChatId(),
+        Page<Message> page = this.messageRepository.findAllByToConversationId(
+                request.getConversationId(),
                 PageRequest.of(request.getPage() - 1,
                         request.getLimit(),
                         Sort.by("id").descending())
@@ -153,26 +186,6 @@ public class MessengerServiceImpl implements IMessengerService {
                         .map(MessageModelView::new)
                         .collect(Collectors.toList())
         );
-    }
-
-    @Override
-    public ApiResponse<?> userManipulateWithGroup(
-            GroupUpdateUserRequest request
-    ) {
-        Group group =  this.groupRepository.findById(request.getGroupId())
-                .orElseThrow(() -> new UnsupportedOperationException());
-        Set<User> users = request.getUserIds()
-                .stream()
-                .map(s -> this.userRepository.findById(s)
-                        .orElseThrow(() -> new UnsupportedOperationException()))
-                .collect(Collectors.toSet());
-
-        if (request.isRemove()) {
-            group.getMembers().removeAll(users);
-        } else {
-            group.getMembers().addAll(users);
-        }
-        return new ApiResponse<>("user manipulate group", 200, 0, null);
     }
 
     private User getUser() {

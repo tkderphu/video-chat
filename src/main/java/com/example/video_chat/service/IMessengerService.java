@@ -12,11 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface IMessengerService {
-    /**
-     * Create message when chat with user or group
-     * @param request:
-     * @return
-     */
     ApiResponse<?> createMessage(MessageRequest request,
                                  List<MultipartFile> files);
     ApiResponse<?> createConversation(GroupRequest request);
@@ -26,8 +21,5 @@ public interface IMessengerService {
     ApiListResponse<MessageModelView> getMessageGalleries(
             int page,
             int limit
-    );
-    ApiResponse<?> userManipulateWithGroup(
-            GroupUpdateUserRequest groupUpdateUserRequest
     );
 }

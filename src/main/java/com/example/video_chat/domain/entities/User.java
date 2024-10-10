@@ -1,12 +1,10 @@
 package com.example.video_chat.domain.entities;
 
-import com.example.video_chat.common.ValidationUtils;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -20,23 +18,42 @@ public class User extends BaseEntity implements UserDetails{
     private String lastName;
     private boolean online;
 
+    private String avatar;
+
     @ManyToMany
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
-    @ManyToMany(mappedBy = "members")
-    private Set<Group> groups;
+    @ManyToMany(mappedBy = "users")
+    private Set<Conversation> conversations;
 
-
-    public String getEmail() {
-        return email;
+    public User(Long id) {
+        super(id);
     }
 
-    public void setEmail(String email) {
-        ValidationUtils.checkField(email, 12);
+    public User(String email, String password, String firstName, String lastName) {
         this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    public User() {
+
+    }
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public String getFullName() {
+        return firstName + " " + lastName;
     }
 
     @Override
@@ -44,43 +61,16 @@ public class User extends BaseEntity implements UserDetails{
         return null;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
+
 
     @Override
     public String getUsername() {
         return email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        ValidationUtils.checkField(firstName, 3);
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-
-        this.lastName = lastName;
-    }
-
-
-    public boolean isOnline() {
-        return online;
-    }
-
-    public void setOnline(boolean online) {
-        this.online = online;
-    }
 }

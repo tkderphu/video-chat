@@ -9,14 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
-
-    /*
-        This method select all messages of a specific conversation
-     */
-    Page<Message> findAllByChatId(
-            Long chatId,
-            Pageable pageable
-    );
+    Page<Message> findAllByToConversationId(Long toConversationId,
+                                            Pageable pageable);
 
 
     /*
@@ -25,25 +19,14 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
      */
     @Query(value = "select m.*\n" +
             "from messages m\n" +
-            "         inner join (select max(mx.id)  as maxId,\n" +
-            "                            c.chat_type as chatType\n" +
-            "                     from messages mx\n" +
-            "                              inner join chat c\n" +
-            "                                         on mx.chat_id = c.id\n" +
-            "                     group by mx.chat_id, c.chat_type) as info\n" +
-            "                    on m.id = info.maxId\n" +
-            "where if(info.chatType = 'USER_CHAT',\n" +
-            "         exists(select 1\n" +
-            "                from chat c\n" +
-            "                where c.id = m.chat_id and\n" +
-            "                      c.user_one_id = :userId\n" +
-            "                   or c.user_two_id = :userId),\n" +
-            "         :userId in (select c.user_id\n" +
-            "                     from conversation c\n" +
-            "                     where c.group_id = (select cx.group_id\n" +
-            "                                         from chat cx\n" +
-            "                                         where cx.id = m.chat_id)))\n" +
-            "order by m.created_date desc\n",
+            "where m.id in (select max(mx.id)\n" +
+            "               from messages mx\n" +
+            "               where exists(select 1\n" +
+            "                            from members mem\n" +
+            "                            where mem.user_id = :userId\n" +
+            "                              and mem.conversation_id = mx.to_conversation_id)\n" +
+            "               group by mx.to_conversation_id)\n" +
+            "order by m.created_date",
     nativeQuery = true)
     Page<Message> findAllMessage(@Param("userId") Long userId,
                                  Pageable pageable);

@@ -1,12 +1,14 @@
 package com.example.video_chat.domain.modelviews.views;
 
-import com.example.video_chat.domain.entities.BaseEntity;
 import com.example.video_chat.domain.entities.User;
 
-public class UserModelView extends BaseEntity {
+public class UserModelView  {
     private String fullName;
-
+    private long id;
+    private String avatar;
     public UserModelView(User user) {
-        this.fullName = user.getFirstName() + " " + user.getLastName();
+        this.fullName = user.getFullName();
+        this.id = user.getId();
+        this.avatar = user.getAvatar();
     }
 }

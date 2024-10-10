@@ -30,14 +30,8 @@ public class BaseEntity {
 
     }
 
-    public BaseEntity(Long id, String createdBy,
-                      String modifiedBy,
-                      Date createdDate, Date modifiedDate) {
+    public BaseEntity(Long id) {
         this.id = id;
-        this.createdBy = createdBy;
-        this.modifiedBy = modifiedBy;
-        this.createdDate = createdDate;
-        this.modifiedDate = modifiedDate;
     }
 
     public Long getId() {

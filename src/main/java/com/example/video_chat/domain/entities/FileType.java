@@ -1,5 +1,7 @@
 package com.example.video_chat.domain.entities;
 
 public enum FileType {
-    MESSAGE;
+    MESSAGE,
+    AVATAR,
+    CONVERSATION_THUMBNAIL
 }

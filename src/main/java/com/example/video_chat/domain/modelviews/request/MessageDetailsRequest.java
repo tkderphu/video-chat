@@ -1,19 +1,19 @@
 package com.example.video_chat.domain.modelviews.request;
 
 public class MessageDetailsRequest {
-    private Long chatId;
+    private Long conversationId;
     private int page;
     private int limit;
 
     public MessageDetailsRequest() {}
 
 
-    public Long getChatId() {
-        return chatId;
+    public Long getConversationId() {
+        return conversationId;
     }
 
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
+    public void setConversationId(Long conversationId) {
+        this.conversationId = conversationId;
     }
 
     public int getPage() {

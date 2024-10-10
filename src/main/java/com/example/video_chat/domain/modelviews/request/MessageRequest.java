@@ -1,13 +1,17 @@
 package com.example.video_chat.domain.modelviews.request;
 
 public class MessageRequest {
-    private Long destId; //something when you haven't created chat yet then i will see destId is userId
+    /**
+     * At here destId is conversationId or userId
+     * is User when conversation between two user isn't created
+     * else ConversationRepository
+     */
+    private Long destId;
     private String content;
     private boolean video;
     public MessageRequest() {
 
     }
-
     public boolean isVideo() {
         return video;
     }

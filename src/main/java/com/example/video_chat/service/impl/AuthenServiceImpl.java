@@ -69,15 +69,13 @@ public class AuthenServiceImpl implements IAuthService {
 
     @Override
     public ApiResponse<?> register(RegisterRequest request) {
-	    //hell world;
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setPassword(this.encoder.encode(request.getPassword()));
-
+        User user = new User(
+                request.getEmail(),
+                this.encoder.encode(request.getPassword()),
+                request.getFirstName(),
+                request.getLastName()
+        );
         userRepository.save(user);
-
         return new ApiResponse<>("User register account successfully",
                 200,
                 0,

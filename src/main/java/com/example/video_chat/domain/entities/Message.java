@@ -2,6 +2,8 @@ package com.example.video_chat.domain.entities;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "messages")
 public class Message extends BaseEntity{
@@ -11,17 +13,22 @@ public class Message extends BaseEntity{
     private String content;
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
-
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FileEntity> detachImages;
     @ManyToOne
-    @JoinColumn(name = "chat_id")
-    private BaseChat chat;
+    @JoinColumn(name = "to_conversation_id")
+    private Conversation toConversation;
 
-    public Message(User fromUser, String content,
-                   MessageType messageType, BaseChat chat) {
+
+    public Message(User fromUser,
+                   String content,
+                   MessageType messageType,
+                   Conversation toConversation
+                   ) {
         this.fromUser = fromUser;
         this.content = content;
         this.messageType = messageType;
-        this.chat = chat;
+        this.toConversation = toConversation;
     }
 
     public Message() {
@@ -32,15 +39,20 @@ public class Message extends BaseEntity{
         return fromUser;
     }
 
-    public BaseChat getChat() {
-        return chat;
+    public Conversation getToConversation() {
+        return toConversation;
     }
 
     public String getContent() {
         return content;
     }
 
-    public MessageType getMessageType() {
-        return messageType;
+    public List<FileEntity> getDetachImages() {
+        return detachImages;
+    }
+
+    public enum MessageType {
+        VIDEO,
+        TEXT
     }
 }
