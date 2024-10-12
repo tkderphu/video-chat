@@ -68,6 +68,7 @@ public class AuthenServiceImpl implements IAuthService {
     }
 
     @Override
+    @Transactional
     public ApiResponse<?> register(RegisterRequest request) {
         User user = new User(
                 request.getEmail(),

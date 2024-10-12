@@ -1,8 +1,6 @@
 package com.example.video_chat.api;
 
-import com.example.video_chat.domain.modelviews.request.GroupRequest;
-import com.example.video_chat.domain.modelviews.request.GroupUpdateUserRequest;
-import com.example.video_chat.domain.modelviews.request.MessageDetailsRequest;
+import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
@@ -10,6 +8,8 @@ import com.example.video_chat.service.IMessengerService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +32,7 @@ public class MessengerAPI {
     @PostMapping("/messages")
     public ApiResponse<?> createMessage(
             @RequestParam("messageRequest") String messageRequest,
-            @RequestParam("files") List<MultipartFile> files
+            @RequestParam(value = "files", required = false) List<MultipartFile> files
     ) throws JsonProcessingException {
         return messengerService.createMessage(
                 this.objectMapper.readValue(
@@ -47,21 +47,29 @@ public class MessengerAPI {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "limit", defaultValue = "15") int limit
     ) {
-        return this.messengerService.getMessageGalleries(page, limit);
+        return this.messengerService.getEachMessageOfEveryConversation(page, limit);
     }
 
-    @GetMapping("/messages/details")
-    public ApiListResponse<?> getMessageDetails(@RequestBody MessageDetailsRequest request){
-        return this.messengerService.getMessageDetails(request);
+    @GetMapping("/messages/conversations/{converId}")
+    public ApiListResponse<?> getAllMessageOfConversation(
+            @PathVariable("converId") Long converId,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit", defaultValue = "50") int limit
+    ){
+        return this.messengerService.getAllMessageOfConversation(
+                converId,
+                page,
+                limit
+        );
     }
-    @PostMapping("/groups")
-    public ApiResponse<?> createConversation(@RequestBody GroupRequest groupRequest) {
-        return this.messengerService.createConversation(groupRequest);
+    @PostMapping("/conversations")
+    public ApiResponse<?> createConversation(@RequestBody ConversationRequest conversationRequest) {
+        return this.messengerService.createConversation(conversationRequest);
     }
 
-    @PostMapping("/group/users")
-    public ApiResponse<?> updateUserInConversation(@RequestBody GroupUpdateUserRequest request) {
-        return this.messengerService.userManipulateWithGroup(request);
+    @MessageMapping("/video-call")
+    public void establishVideoCall(@Payload String signal) {
+        this.messengerService.establishVideoCall(signal);
     }
 
 }

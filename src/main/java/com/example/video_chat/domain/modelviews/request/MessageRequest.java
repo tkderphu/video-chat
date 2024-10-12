@@ -9,6 +9,13 @@ public class MessageRequest {
     private Long destId;
     private String content;
     private boolean video;
+
+    public MessageRequest(Long destId, String content, boolean video) {
+        this.destId = destId;
+        this.content = content;
+        this.video = video;
+    }
+
     public MessageRequest() {
 
     }

@@ -8,6 +8,9 @@ public class ConversationModelView {
     private String imageRepresent;
     private boolean status;
 
+    public ConversationModelView() {
+
+    }
     public ConversationModelView(Conversation conversation) {
         this.id = conversation.getId();
         this.displayName = conversation.displayName();

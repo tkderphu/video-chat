@@ -17,6 +17,10 @@ public class MessageModelView {
     private String content;
     private List<String> detachImages;
 
+    public MessageModelView() {
+
+    }
+
     public MessageModelView(Message message) {
         this.id = message.getId();
         this.createdDate = message.getCreatedDate();
@@ -24,5 +28,29 @@ public class MessageModelView {
         this.toConversation = new ConversationModelView(message.getToConversation());
         this.content = message.getContent();
         this.detachImages = FileEntityConvert.fileEntityToString(message.getDetachImages());
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public UserModelView getFromUser() {
+        return fromUser;
+    }
+
+    public ConversationModelView getToConversation() {
+        return toConversation;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public List<String> getDetachImages() {
+        return detachImages;
     }
 }

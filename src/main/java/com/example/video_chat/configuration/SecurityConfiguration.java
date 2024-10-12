@@ -1,7 +1,6 @@
 package com.example.video_chat.configuration;
 
 import com.example.video_chat.domain.entities.Token;
-import com.example.video_chat.repository.PermissionRepository;
 import com.example.video_chat.repository.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -28,22 +26,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
-    private final PermissionRepository permissionRepository;
-    private final RoleChecker roleChecker;
-    private final Logger logger = LoggerFactory.getLogger(SecurityConfiguration.class);
     private final FilterRequest filterRequest;
-    public SecurityConfiguration(PermissionRepository permissionRepository,
-                                 RoleChecker roleChecker,
-                                 FilterRequest filterRequest) {
-        this.permissionRepository = permissionRepository;
-        this.roleChecker = roleChecker;
+
+    public SecurityConfiguration(FilterRequest filterRequest) {
         this.filterRequest = filterRequest;
     }
 
@@ -52,12 +42,9 @@ public class SecurityConfiguration {
         http.cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> {
-                    req.requestMatchers("/api/v1/messenger/messages",
-                                    "/**")
-                            .access((authentication, request) -> {
-                                boolean check = roleChecker.check(authentication.get(), request.getRequest());
-                                return new AuthorizationDecision(check);
-                            });
+                    req.requestMatchers("/api/v1/auth/**")
+                            .permitAll()
+                            .anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(excep -> {

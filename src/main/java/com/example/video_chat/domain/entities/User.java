@@ -2,10 +2,12 @@ package com.example.video_chat.domain.entities;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -40,8 +42,13 @@ public class User extends BaseEntity implements UserDetails{
         this.lastName = lastName;
     }
 
+
     public User() {
 
+    }
+
+    public Set<Conversation> getConversations() {
+        return conversations;
     }
 
     public boolean isOnline() {
@@ -58,7 +65,9 @@ public class User extends BaseEntity implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return this.roles.stream()
+                .map(s -> new SimpleGrantedAuthority("ROLE_"+ s.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -73,4 +82,14 @@ public class User extends BaseEntity implements UserDetails{
     }
 
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof User) {
+            User user = (User) obj;
+            if(this.email.compareTo(user.email) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

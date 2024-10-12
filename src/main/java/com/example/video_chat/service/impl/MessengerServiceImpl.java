@@ -4,8 +4,7 @@ import com.example.video_chat.common.SystemUtils;
 import com.example.video_chat.domain.entities.Conversation;
 import com.example.video_chat.domain.entities.Message;
 import com.example.video_chat.domain.entities.User;
-import com.example.video_chat.domain.modelviews.request.GroupRequest;
-import com.example.video_chat.domain.modelviews.request.MessageDetailsRequest;
+import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
@@ -22,6 +21,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
@@ -59,19 +59,22 @@ public class MessengerServiceImpl implements IMessengerService {
                                         List<MultipartFile> files) {
         User fromUser = getUser();
         Conversation conversation = this.conversationRepository
-                .findByUserId(request.getDestId())
+                .findById(request.getDestId())
                 .orElse(null);
         if (conversation == null) {
             conversation = new Conversation(
                     new HashSet<>(Set.of(
                             fromUser,
-                            new User(request.getDestId())
+                            this.userRepository
+                                    .findById(request.getDestId())
+                                    .orElseThrow(() -> new GeneralException("not found user id"))
                     )),
                     PRIVATE
             );
             this.conversationRepository.save(conversation);
+        } else if (!conversation.getUsers().contains(fromUser)) {
+            throw new GeneralException("you haven't added to group yet");
         }
-
         Message message = new Message(
                 fromUser,
                 request.getContent(),
@@ -98,12 +101,12 @@ public class MessengerServiceImpl implements IMessengerService {
         );
         this.simpMessagingTemplate.convertAndSend(
                 "/topic/private/conversation/gallery/message/" + conversation.getId(),
-                getMessageGalleries(0, 0)
+                getEachMessageOfEveryConversation(1, 50)
         );
     }
 
     @Override
-    public ApiResponse<?> createConversation(GroupRequest request) {
+    public ApiResponse<?> createConversation(ConversationRequest request) {
         User fromUser = getUser();
         if (request == null || request.getUserIds().size() < 2) {
             throw new GeneralException("Size of group must greater than 2");
@@ -143,23 +146,32 @@ public class MessengerServiceImpl implements IMessengerService {
     }
 
     @Override
-    public ApiListResponse<MessageModelView> getMessageDetails(
-            MessageDetailsRequest request
+    public ApiListResponse<MessageModelView> getAllMessageOfConversation(
+            Long conversationId,
+            int numPage,
+            int limit
     ) {
+        User fromUser = getUser();
         Page<Message> page = this.messageRepository.findAllByToConversationId(
-                request.getConversationId(),
-                PageRequest.of(request.getPage() - 1,
-                        request.getLimit(),
+                conversationId,
+                PageRequest.of(numPage - 1,
+                        limit,
                         Sort.by("id").descending())
         );
 
+        if (!CollectionUtils.isEmpty(fromUser.getConversations()) &&
+                !fromUser.getConversations()
+                        .stream()
+                        .anyMatch(s -> s.getId().compareTo(conversationId) == 0)) {
+            throw new GeneralException("You haven't participated group yet");
+        }
         return new ApiListResponse<>(
                 "get details message of specific chat",
                 200,
                 0,
                 page.getTotalPages(),
-                request.getPage(),
-                request.getLimit(),
+                numPage,
+                limit,
                 page.getContent()
                         .stream()
                         .map(MessageModelView::new)
@@ -170,7 +182,7 @@ public class MessengerServiceImpl implements IMessengerService {
     }
 
     @Override
-    public ApiListResponse<MessageModelView> getMessageGalleries(int pageNumber, int limit) {
+    public ApiListResponse<MessageModelView> getEachMessageOfEveryConversation(int pageNumber, int limit) {
         User fromUser = getUser();
         Page<Message> page = this.messageRepository.findAllMessage(
                 fromUser.getId(),
@@ -188,10 +200,15 @@ public class MessengerServiceImpl implements IMessengerService {
         );
     }
 
+    @Override
+    public void establishVideoCall(String signal) {
+
+    }
+
     private User getUser() {
         return userRepository
                 .findByEmailIgnoreCase(SystemUtils.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
+                .get();
     }
 }
 

@@ -20,7 +20,7 @@ public class FileController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    // http://localhost:8080/api/v1/files?url=C%3A%5CUsers%5Cthanh%5COneDrive%5CPictures%5C2024-9-12%2010-57-36.png
+//     http://localhost:8080/api/v1/files?url=C%3A%5CUsers%5Cthanh%5COneDrive%5CPictures%5C2024-9-12%2010-57-36.png
     @GetMapping
     public ResponseEntity<Resource> readFile(@RequestParam(name = "url") String url) {
         try {

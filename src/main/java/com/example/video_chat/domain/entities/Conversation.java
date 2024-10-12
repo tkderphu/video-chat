@@ -14,7 +14,7 @@ public class Conversation extends BaseEntity {
     private String thumbnail;
 
     @ManyToMany
-    @JoinTable(name = "members",
+    @JoinTable(name = "participates",
             joinColumns = @JoinColumn(name = "conversation_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> users;
@@ -22,14 +22,8 @@ public class Conversation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ConversationType conversationType;
 
-    public Conversation(String name,
-                        String thumbnail,
-                        Set<User> users,
-                        ConversationType conversationType) {
-        this.name = name;
-        this.thumbnail = thumbnail;
-        this.users = users;
-        this.conversationType = conversationType;
+    public Conversation(Long id) {
+        super(id);
     }
 
     public Conversation(Set<User> users, ConversationType conversationType) {
@@ -37,12 +31,32 @@ public class Conversation extends BaseEntity {
         this.conversationType = conversationType;
     }
 
+    public Conversation(String name,
+                        Set<User> users,
+                        ConversationType conversationType) {
+        this(users, conversationType);
+        this.name = name;
+    }
+
+    public Conversation(String name,
+                        String thumbnail,
+                        Set<User> users,
+                        ConversationType conversationType) {
+        this(name, users, conversationType);
+        this.thumbnail = thumbnail;
+    }
+
+
     public Conversation() {
 
     }
 
+    public Set<User> getUsers() {
+        return users;
+    }
+
     public String displayName() {
-        if(conversationType == ConversationType.PUBLIC) {
+        if (conversationType == ConversationType.PUBLIC) {
             return this.name;
         }
         return getUserPrivateConversation()
@@ -56,7 +70,7 @@ public class Conversation extends BaseEntity {
     }
 
     public String imageRepresent() {
-        if(conversationType == ConversationType.PRIVATE) {
+        if (conversationType == ConversationType.PRIVATE) {
             return getUserPrivateConversation()
                     .getAvatar();
         }
@@ -65,6 +79,7 @@ public class Conversation extends BaseEntity {
 
     private User getUserPrivateConversation() {
         return users.stream()
+
                 .filter(u -> !u.getUsername().equals(SystemUtils.getUsername()))
                 .findFirst()
                 .get();
@@ -76,4 +91,14 @@ public class Conversation extends BaseEntity {
     }
 
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Conversation) {
+            Conversation conversation = (Conversation) obj;
+            if(this.getId().compareTo(conversation.getId()) == 0)  {
+                return true;
+            }
+        }
+        return false;
+    }
 }

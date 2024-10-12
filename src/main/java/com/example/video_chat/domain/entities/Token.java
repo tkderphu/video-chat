@@ -6,7 +6,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "auth_tokens")
+@Table(name = "tokens")
 public class Token extends BaseEntity {
     private String uuid;
     private long expiredTime;

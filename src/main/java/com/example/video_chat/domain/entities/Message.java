@@ -13,12 +13,12 @@ public class Message extends BaseEntity{
     private String content;
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<FileEntity> detachImages;
     @ManyToOne
     @JoinColumn(name = "to_conversation_id")
     private Conversation toConversation;
-
+    private boolean saw;
 
     public Message(User fromUser,
                    String content,
@@ -50,6 +50,12 @@ public class Message extends BaseEntity{
     public List<FileEntity> getDetachImages() {
         return detachImages;
     }
+
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
 
     public enum MessageType {
         VIDEO,

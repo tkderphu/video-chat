@@ -26,6 +26,10 @@ public class ApiListResponse <T>{
         this.data = data;
     }
 
+    public ApiListResponse() {
+
+    }
+
     public String getMessage() {
         return message;
     }

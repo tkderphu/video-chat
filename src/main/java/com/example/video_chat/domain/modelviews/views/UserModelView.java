@@ -11,4 +11,20 @@ public class UserModelView  {
         this.id = user.getId();
         this.avatar = user.getAvatar();
     }
+
+    public UserModelView() {
+
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
 }
