@@ -17,6 +17,6 @@ jobs:
           distribution: 'corretto'
           java-version: 17
       - name: Build & Test
-        run: ./mvnw clean install -f pom.xml
+        run: chmod +x ./mvnw && ./mvnw clean install -f pom.xml
 
 
