@@ -1,0 +1,22 @@
+name: Build & Deploy Spring App #name for workflows
+
+on: ##when action is triggered
+  push:
+    branches:
+      - test-ci-cd
+jobs:
+  build-deploy:
+    name: Build And Deploy App Spring
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup JKD 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: 17
+      - name: Build & Test
+        run: ./mvnw clean install -f pom.xml
+
+
