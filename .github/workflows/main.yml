@@ -2,7 +2,7 @@ name: Build & Deploy Spring App #name for workflows
 
 on: ##when action is triggered
   push:
-    branches:
+    branches: 
       - test-ci-cd
 jobs:
   build-deploy:
@@ -17,6 +17,16 @@ jobs:
           distribution: 'corretto'
           java-version: 17
       - name: Build & Test
-        run: chmod +x ./mvnw && ./mvnw clean install -f pom.xml
+        run: chmod +x ./mvnw && ./mvnw clean install -f pom.xml -DskipTests
+      - name: Login Docker
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Build & Push to Docker hub
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/video-chat-java-btl:latest
 
 
