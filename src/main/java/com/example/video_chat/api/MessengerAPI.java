@@ -4,7 +4,8 @@ import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
-import com.example.video_chat.service.IMessengerService;
+import com.example.video_chat.service.ConversationService;
+import com.example.video_chat.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,14 +21,17 @@ import java.util.List;
 @CrossOrigin("*")
 public class MessengerAPI {
 
-    private final IMessengerService messengerService;
+    private final MessageService messengerService;
+    private final ConversationService conversationService;
     private final ObjectMapper objectMapper;
-    public MessengerAPI(IMessengerService messengerService,
+
+    public MessengerAPI(MessageService messengerService,
+                        ConversationService conversationService,
                         ObjectMapper objectMapper) {
         this.messengerService = messengerService;
+        this.conversationService = conversationService;
         this.objectMapper = objectMapper;
     }
-
 
     @PostMapping("/messages")
     public ApiResponse<?> createMessage(
@@ -37,39 +41,52 @@ public class MessengerAPI {
         return messengerService.createMessage(
                 this.objectMapper.readValue(
                         messageRequest,
-                        new TypeReference<MessageRequest>() {}),
+                        new TypeReference<MessageRequest>() {
+                        }),
                 files
         );
     }
 
-    @GetMapping("/messages/galleries")
-    public ApiListResponse<?> getMessageGalleries(
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "limit", defaultValue = "15") int limit
-    ) {
-        return this.messengerService.getEachMessageOfEveryConversation(page, limit);
-    }
-
-    @GetMapping("/messages/conversations/{converId}")
-    public ApiListResponse<?> getAllMessageOfConversation(
-            @PathVariable("converId") Long converId,
+    @GetMapping("/conversations")
+    public ApiListResponse<?> getAllConversationOfCurrentUser(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "limit", defaultValue = "50") int limit
-    ){
-        return this.messengerService.getAllMessageOfConversation(
-                converId,
-                page,
-                limit
-        );
+    ) {
+        return this.conversationService
+                .getAllConversationOfCurrentUser(
+                        page,
+                        limit
+                );
     }
+
+    @GetMapping("/messages/conversations/{conversationId}")
+    public ApiListResponse<?> getAllMessageOfConversation(
+            @PathVariable("conversationId") Long conversationId,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit", defaultValue = "100") int limit
+    ) {
+        return this.messengerService
+                .getAllMessageOfConversation(
+                        conversationId,
+                        page,
+                        limit
+                );
+    }
+
     @PostMapping("/conversations")
-    public ApiResponse<?> createConversation(@RequestBody ConversationRequest conversationRequest) {
-        return this.messengerService.createConversation(conversationRequest);
+    public ApiResponse<?> createConversation(
+            @RequestBody ConversationRequest conversationRequest
+    ) {
+        return this.conversationService
+                .createConversation(
+                        conversationRequest
+                );
     }
 
     @MessageMapping("/video-call")
     public void establishVideoCall(@Payload String signal) {
-        this.messengerService.establishVideoCall(signal);
+        this.messengerService
+                .establishVideoCall(signal);
     }
 
 }

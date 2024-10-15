@@ -1,14 +1,12 @@
 package com.example.video_chat.domain.modelviews.views;
 
 import com.example.video_chat.common.FileEntityConvert;
-import com.example.video_chat.domain.entities.BaseEntity;
-import com.example.video_chat.domain.entities.FileEntity;
 import com.example.video_chat.domain.entities.Message;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageModelView {
     private long id;
     private Date createdDate;
@@ -16,16 +14,11 @@ public class MessageModelView {
     private ConversationModelView toConversation;
     private String content;
     private List<String> detachImages;
-
-    public MessageModelView() {
-
-    }
-
     public MessageModelView(Message message) {
         this.id = message.getId();
         this.createdDate = message.getCreatedDate();
         this.fromUser = new UserModelView(message.getFromUser());
-        this.toConversation = new ConversationModelView(message.getToConversation());
+        this.toConversation = new ConversationModelView(message.getConversation());
         this.content = message.getContent();
         this.detachImages = FileEntityConvert.fileEntityToString(message.getDetachImages());
     }

@@ -1,16 +1,17 @@
 package com.example.video_chat.domain.modelviews.views;
 
 import com.example.video_chat.domain.entities.Conversation;
+import com.example.video_chat.domain.entities.Message;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConversationModelView {
     private long id;
     private String displayName;
     private String imageRepresent;
     private boolean status;
+    private MessageModelView recentMessage;
 
-    public ConversationModelView() {
-
-    }
     public ConversationModelView(Conversation conversation) {
         this.id = conversation.getId();
         this.displayName = conversation.displayName();
@@ -32,5 +33,13 @@ public class ConversationModelView {
 
     public boolean isStatus() {
         return status;
+    }
+
+    public MessageModelView getRecentMessage() {
+        return recentMessage;
+    }
+
+    public void setRecentMessage(Message recentMessage) {
+        this.recentMessage = new MessageModelView(recentMessage);
     }
 }

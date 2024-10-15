@@ -16,19 +16,19 @@ public class Message extends BaseEntity{
     @OneToMany(cascade = CascadeType.ALL)
     private List<FileEntity> detachImages;
     @ManyToOne
-    @JoinColumn(name = "to_conversation_id")
-    private Conversation toConversation;
+    @JoinColumn(name = "conversation_id")
+    private Conversation conversation;
     private boolean saw;
 
     public Message(User fromUser,
                    String content,
                    MessageType messageType,
-                   Conversation toConversation
+                   Conversation conversation
                    ) {
         this.fromUser = fromUser;
         this.content = content;
         this.messageType = messageType;
-        this.toConversation = toConversation;
+        this.conversation = conversation;
     }
 
     public Message() {
@@ -39,8 +39,8 @@ public class Message extends BaseEntity{
         return fromUser;
     }
 
-    public Conversation getToConversation() {
-        return toConversation;
+    public Conversation getConversation() {
+        return conversation;
     }
 
     public String getContent() {

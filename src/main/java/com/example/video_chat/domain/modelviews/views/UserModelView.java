@@ -12,9 +12,6 @@ public class UserModelView  {
         this.avatar = user.getAvatar();
     }
 
-    public UserModelView() {
-
-    }
 
     public String getFullName() {
         return fullName;
