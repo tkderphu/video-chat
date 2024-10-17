@@ -9,6 +9,7 @@ import com.example.video_chat.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
@@ -83,10 +84,18 @@ public class MessengerAPI {
                 );
     }
 
-    @MessageMapping("/video-call")
+    @MessageMapping("/signal")
     public void establishVideoCall(@Payload String signal) {
-        this.messengerService
-                .establishVideoCall(signal);
+        this.messengerService.establishVideoCall(
+                null,
+                signal);
+    }
+
+    @PostMapping("/signal")
+    public void videoCall(@RequestBody String signal) {
+        this.messengerService.establishVideoCall(
+                null,
+                signal);
     }
 
 }

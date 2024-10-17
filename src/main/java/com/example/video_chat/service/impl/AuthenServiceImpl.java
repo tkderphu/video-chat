@@ -63,7 +63,7 @@ public class AuthenServiceImpl implements IAuthService {
         return new ApiResponse<>("User login successfully",
                 200,
                 0,
-                new AuthResponse(user.getId(), token.getUuid(), token.getExpiredTime()));
+                new AuthResponse(user.getId(), token.getUuid(), token.getExpiredTime(), user.getFullName()));
 
     }
 

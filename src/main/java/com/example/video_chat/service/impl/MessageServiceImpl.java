@@ -13,6 +13,8 @@ import com.example.video_chat.repository.ConversationRepository;
 import com.example.video_chat.repository.MessageRepository;
 import com.example.video_chat.repository.UserRepository;
 import com.example.video_chat.service.MessageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,7 +35,7 @@ import static com.example.video_chat.domain.entities.Message.MessageType.VIDEO;
 
 @Service
 public class MessageServiceImpl implements MessageService {
-
+    private final Logger LOGGER = LoggerFactory.getLogger(MessageServiceImpl.class);
     private final UserRepository userRepository;
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
@@ -130,8 +132,12 @@ public class MessageServiceImpl implements MessageService {
 
     }
     @Override
-    public void establishVideoCall(String signal) {
-
+    public void establishVideoCall(Long conversationId, String signal) {
+        this.simpMessagingTemplate.convertAndSend(
+                "/topic/room",
+                signal
+        );
+        this.LOGGER.info(signal);
     }
 }
 

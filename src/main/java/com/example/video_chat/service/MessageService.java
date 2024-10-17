@@ -1,6 +1,5 @@
 package com.example.video_chat.service;
 
-import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
@@ -17,6 +16,6 @@ public interface MessageService {
             int page,
             int limit
     );
-    void establishVideoCall(String signal);
+    void establishVideoCall(Long conversationId, String signal);
 
 }
