@@ -96,20 +96,37 @@ public class ConversationServiceImpl implements ConversationService {
                 limit,
                 pageConversation.getTotalPages(),
                 pageConversation
-                    .getContent()
-                    .stream()
-                    .map(con -> {
-                        ConversationModelView conv =
-                                new ConversationModelView(con);
-                        conv.setRecentMessage(
-                                this
-                                    .messageRepository
-                                    .findLatestMessageByConversationId(con.getId())
-                                    .get()
-                        );
-                        return conv;
-                    })
-                    .collect(Collectors.toList())
+                        .getContent()
+                        .stream()
+                        .map(con -> {
+                            ConversationModelView conv =
+                                    new ConversationModelView(con);
+                            conv.setRecentMessage(
+                                    this
+                                            .messageRepository
+                                            .findLatestMessageByConversationId(con.getId())
+                                            .orElse(null)
+                            );
+                            return conv;
+                        })
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @Override
+    public ApiResponse<ConversationModelView> findPrivateConversation(Long userId) {
+        User user = userRepository
+                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .get();
+
+        Conversation conversation = this.conversationRepository
+                .findPrivateConversation(user.getId() + userId)
+                .orElseThrow(() -> new GeneralException("Not found Conversation"));
+        return new ApiResponse<>(
+                "get private conversation",
+                200,
+                0,
+                new ConversationModelView(conversation)
         );
     }
 }

@@ -39,13 +39,16 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable)
+        http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> {
-                    req.anyRequest().permitAll();
-//                    req.requestMatchers("/api/v1/auth/**")
-//                            .permitAll()
-//                            .anyRequest().authenticated();
+                    req.requestMatchers(
+                                    "/api/v1/users/auth/**",
+                                    "/ws/**",
+                                    "/api/v1/files/**",
+                                    "/**")
+                            .permitAll()
+                            .anyRequest()
+                            .authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(excep -> {

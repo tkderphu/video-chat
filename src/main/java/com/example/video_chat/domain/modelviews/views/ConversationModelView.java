@@ -40,6 +40,8 @@ public class ConversationModelView {
     }
 
     public void setRecentMessage(Message recentMessage) {
-        this.recentMessage = new MessageModelView(recentMessage);
+        if(recentMessage != null) {
+            this.recentMessage = new MessageModelView(recentMessage);
+        }
     }
 }

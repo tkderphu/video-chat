@@ -20,4 +20,4 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 auth:
   token:
-    expired-time: 60000 # 1 minute
+    expired-time: 86400000 # 1 minute

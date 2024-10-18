@@ -28,4 +28,22 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
             @Param("username") String username,
             Pageable pageable
     );
+
+    @Query(value = "select c.*\n" +
+            "from conversations c\n" +
+            "where conversation_type = 'PRIVATE'\n" +
+            "and c.id = (\n" +
+            "    select cx.id\n" +
+            "    from (\n" +
+            "        select\n" +
+            "            p.conversation_id as id,\n" +
+            "            sum(p.user_id) as totalId\n" +
+            "        from participates p\n" +
+            "        group by p.conversation_id\n" +
+            "     ) as cx\n" +
+            "    where cx.totalId = :totalId\n" +
+            ")\n", nativeQuery = true)
+    Optional<Conversation> findPrivateConversation(
+            @Param("totalId") Long totalId
+    );
 }

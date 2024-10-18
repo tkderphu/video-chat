@@ -13,4 +13,6 @@ public interface ConversationService {
             int page,
             int limit
     );
+
+    ApiResponse<ConversationModelView> findPrivateConversation(Long userId);
 }

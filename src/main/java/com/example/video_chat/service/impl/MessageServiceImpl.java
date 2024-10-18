@@ -89,6 +89,10 @@ public class MessageServiceImpl implements MessageService {
                 0,
                 new MessageModelView(message)
         );
+        this.simpMessagingTemplate.convertAndSend(
+                "/topic/private/messages/conversation/" + conversation.getId(),
+                response.getData()
+        );
         return response;
 
     }

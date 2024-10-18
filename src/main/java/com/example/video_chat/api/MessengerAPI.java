@@ -4,12 +4,12 @@ import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
+import com.example.video_chat.domain.modelviews.views.ConversationModelView;
 import com.example.video_chat.service.ConversationService;
 import com.example.video_chat.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
@@ -96,6 +96,17 @@ public class MessengerAPI {
         this.messengerService.establishVideoCall(
                 null,
                 signal);
+    }
+
+
+    @GetMapping("/conversations/users/{userId}")
+    public ApiResponse<ConversationModelView> getPrivateConversation(
+            @PathVariable("userId") Long userId
+    ) {
+        return this.conversationService
+                .findPrivateConversation(
+                        userId
+                );
     }
 
 }
