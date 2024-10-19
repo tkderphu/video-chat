@@ -62,6 +62,8 @@ public class MessageServiceImpl implements MessageService {
         Conversation conversation = this.conversationRepository
                 .findById(request.getDestId())
                 .orElse(null);
+
+
         if (conversation == null) {
             conversation = new Conversation(
                     new HashSet<>(Set.of(
@@ -83,16 +85,19 @@ public class MessageServiceImpl implements MessageService {
                 conversation
         );
         this.messageRepository.save(message);
-        ApiResponse<MessageModelView> response = new ApiResponse<>(
+        final ApiResponse<MessageModelView> response = new ApiResponse<>(
                 "CREATE MESSAGE",
                 200,
                 0,
                 new MessageModelView(message)
         );
-        this.simpMessagingTemplate.convertAndSend(
-                "/topic/private/messages/conversation/" + conversation.getId(),
-                response.getData()
-        );
+        conversation.getUsers()
+                .forEach(user -> {
+                    this.simpMessagingTemplate.convertAndSend(
+                            "/topic/private/mesages/conversation/user/" + user.getId(),
+                            response.getData()
+                    );
+                });
         return response;
 
     }
@@ -109,9 +114,7 @@ public class MessageServiceImpl implements MessageService {
                 .get();
         Page<Message> page = this.messageRepository.findAllByConversationId(
                 conversationId,
-                PageRequest.of(numPage - 1,
-                        limit,
-                        Sort.by("id").descending())
+                PageRequest.of(numPage - 1, limit)
         );
 
         if (!CollectionUtils.isEmpty(fromUser.getConversations()) &&

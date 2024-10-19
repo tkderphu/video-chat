@@ -6,7 +6,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "messages")
-public class Message extends BaseEntity{
+public class    Message extends BaseEntity{
     @ManyToOne
     @JoinColumn(name = "from_user_id")
     private User fromUser;

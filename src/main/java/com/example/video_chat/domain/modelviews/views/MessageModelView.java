@@ -21,6 +21,7 @@ public class MessageModelView {
         this.toConversation = new ConversationModelView(message.getConversation());
         this.content = message.getContent();
         this.detachImages = FileEntityConvert.fileEntityToString(message.getDetachImages());
+        this.createdDate = message.getCreatedDate();
     }
 
     public long getId() {
