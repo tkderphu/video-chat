@@ -10,6 +10,7 @@ public class ConversationModelView {
     private String displayName;
     private String imageRepresent;
     private boolean status;
+    private Conversation.ConversationType scope;
     private MessageModelView recentMessage;
 
     public ConversationModelView(Conversation conversation) {
@@ -17,6 +18,7 @@ public class ConversationModelView {
         this.displayName = conversation.displayName();
         this.imageRepresent = conversation.imageRepresent();
         this.status = conversation.status();
+        this.scope = conversation.getConversationType();
     }
 
     public long getId() {
@@ -37,6 +39,10 @@ public class ConversationModelView {
 
     public MessageModelView getRecentMessage() {
         return recentMessage;
+    }
+
+    public Conversation.ConversationType getScope() {
+        return scope;
     }
 
     public void setRecentMessage(Message recentMessage) {

@@ -22,6 +22,8 @@ public class Conversation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ConversationType conversationType;
 
+
+
     public Conversation(Long id) {
         super(id);
     }
@@ -30,6 +32,8 @@ public class Conversation extends BaseEntity {
         this.users = users;
         this.conversationType = conversationType;
     }
+
+
 
     public Conversation(String name,
                         Set<User> users,
@@ -49,6 +53,10 @@ public class Conversation extends BaseEntity {
 
     public Conversation() {
 
+    }
+
+    public ConversationType getConversationType() {
+        return conversationType;
     }
 
     public Set<User> getUsers() {

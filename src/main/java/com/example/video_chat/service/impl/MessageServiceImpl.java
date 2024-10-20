@@ -94,7 +94,7 @@ public class MessageServiceImpl implements MessageService {
         conversation.getUsers()
                 .forEach(user -> {
                     this.simpMessagingTemplate.convertAndSend(
-                            "/topic/private/mesages/conversation/user/" + user.getId(),
+                            "/topic/private/messages/conversation/user/" + user.getId(),
                             response.getData()
                     );
                 });

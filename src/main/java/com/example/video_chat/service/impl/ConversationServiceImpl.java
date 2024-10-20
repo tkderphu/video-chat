@@ -8,6 +8,7 @@ import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.domain.modelviews.views.ConversationModelView;
+import com.example.video_chat.domain.modelviews.views.MessageModelView;
 import com.example.video_chat.handler.exception.GeneralException;
 import com.example.video_chat.repository.ConversationRepository;
 import com.example.video_chat.repository.MessageRepository;
@@ -15,6 +16,7 @@ import com.example.video_chat.repository.UserRepository;
 import com.example.video_chat.service.ConversationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -30,13 +32,15 @@ public class ConversationServiceImpl implements ConversationService {
     private final UserRepository userRepository;
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
-
+    private final SimpMessagingTemplate simpMessagingTemplate;
     public ConversationServiceImpl(UserRepository userRepository,
                                    ConversationRepository conversationRepository,
-                                   MessageRepository messageRepository) {
+                                   MessageRepository messageRepository,
+                                   SimpMessagingTemplate simpMessagingTemplate) {
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
+        this.simpMessagingTemplate = simpMessagingTemplate;
     }
 
     @Override
@@ -75,7 +79,22 @@ public class ConversationServiceImpl implements ConversationService {
                 conversation
         );
         this.messageRepository.save(message);
-        return null;
+
+        ApiResponse<ConversationModelView> response = new ApiResponse<>(
+                "created conversation",
+                200,
+                0,
+                new ConversationModelView(conversation)
+        );
+        response.getData().setRecentMessage(message);
+        conversation.getUsers()
+                .forEach(user -> {
+                    this.simpMessagingTemplate.convertAndSend(
+                            "/topic/private/conversation/user/" + user.getId(),
+                            response.getData()
+                    );
+                });
+        return response;
     }
 
     @Override
@@ -120,7 +139,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .get();
 
         Conversation conversation = this.conversationRepository
-                .findPrivateConversation(user.getId() + userId)
+                .findPrivateConversation(user.getId(), userId)
                 .orElseThrow(() -> new GeneralException("Not found Conversation"));
         return new ApiResponse<>(
                 "get private conversation",
