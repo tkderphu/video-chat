@@ -67,6 +67,7 @@ jobs:
           context: .
           push: true
           file: ./Dockerfile
+          platforms: linux/amd64
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/btl_java_backend:${{ steps.extract_version.outputs.VERSION }}, ${{ secrets.DOCKER_HUB_USERNAME }}/btl_java_backend:latest
           build-args: |
             PROFILE=dev
