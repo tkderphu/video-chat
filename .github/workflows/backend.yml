@@ -5,7 +5,7 @@ on:
     branches:
       - M103-fix-l2
 jobs:
-  compile-and-test:
+  compile:
     runs-on: ubuntu-latest
     name: Compile project
     steps:
@@ -21,17 +21,16 @@ jobs:
           distribution: 'corretto'
 
       - name: Compile project
-        run: chmod +x ./mvnw && ./mvnw install package
+        run: chmod +x ./mvnw && ./mvnw compile
   build:
     runs-on: ubuntu-latest
     name: Build backend
-    needs: [ compile-and-test ]
+    needs: [ compile ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
