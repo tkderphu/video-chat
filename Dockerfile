@@ -16,7 +16,7 @@ COPY --from=build /build/target/video_chat-*.jar /app/
 
 EXPOSE 8088
 
-ENV DB_URL=jdbc:mysql://app-mysql:3306/video_chat
+ENV DB_URL=jdbc:mysql://app-mysql:3306/video_chat?createDatabaseIfNotExist=true
 
 
 ENV ACTIVE_PROFILE=${PROFILE}
