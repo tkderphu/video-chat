@@ -13,5 +13,5 @@ EXPOSE 8088
 ENV DB_URL=jdbc:mysql://app-mysql:3306/social_network_v2
 ENV ACTIVE_PROFILE=${PROFILE}
 ENV JAR_VERSION=${APP_VERSION}
-
-CMD java -jar -Dspring.profiles.active=${ACTIVE_PROFILE} -Dspring.datasource.url=${DB_URL}  social-network-${JAR_VERSION}.jar
+#-Dspring.profiles.active=${ACTIVE_PROFILE}
+CMD java -jar  -Dspring.datasource.url=${DB_URL}  social-network-${JAR_VERSION}.jar
