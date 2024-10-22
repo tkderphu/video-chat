@@ -1,28 +1,69 @@
-name: Deploy Backed Video-Chat
+name: Build & Deploy Web Application Video-Chat
+
 on:
   push:
     branches:
-      - main
+      - M103-fix-l2
 jobs:
-  Compile:
+  compile:
     runs-on: ubuntu-latest
+    name: Compile project
     steps:
-      - name: Check Code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'corretto'
-      - name: Compile Project
-        run: chmod +x ./mvnw && ./mvnw compile
 
-  Build:
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Compile project
+        run: chmod +x ./mvnw && ./mvnw clean compile
+  unit-tests:
     runs-on: ubuntu-latest
+    name: Unit tests
     steps:
-      - name: Checkout Code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Running Unit Tests
+        run: chmod +x ./mvnw && ./mvnw clean test
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build backend
+    needs: [ compile, unit-tests ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Compile project
+        run: chmod +x ./mvnw && ./mvnw clean package
+  build-image:
+    runs-on: ubuntu-latest
+    name: Build Docker image
+    needs: [ build ]
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -31,36 +72,21 @@ jobs:
         with:
           java-version: '17'
           distribution: 'corretto'
-      - name: Build Project
-        run: chmod +x ./mvnw && ./mvnw build
-  Build-Image:
-    runs-on: ubuntu-latest
-    needs: [Compile, Build]
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Extract project version
+        id: extract_version
+        run: chmod +x ./mvnw && echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
       - name: Login Dockerhub
-        uses: docker/login-action@v5
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - name: Extract App Version
-        id: extract_app_version
-        run: echo "()" >> $GITHUB_OUTPUT
       - name: Build Image
-        uses: docker/build-push-actions@v6
+        uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}:${{ steps.extract_app_version.outputs.VERSION }}, ${{ secrets.DOCKER_HUB_USERNAME }}:latest
-          build-args:
+          file: ./Dockerfile
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/BTL_JAVA_BACKEND:${{ steps.extract_version.outputs.VERSION }}, ${{ secrets.DOCKER_HUB_USERNAME }}/BTL_JAVA_BACKEND:latest
+          build-args: |
             PROFILE=dev
-            APP_VERSION=${{ steps.extract_app_version.outputs.VERSION }}
-  Deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Connect Into Server
-        run: ssh ${{ secrets.REMOTE_USERNAME }}@${{ secrets.REMOTE_IP }} "mkdir -p ci-cd"
+            APP_VERSION=${{ steps.extract_version.outputs.VERSION }}
