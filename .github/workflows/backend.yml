@@ -5,7 +5,7 @@ on:
     branches:
       - M103-fix-l2
 jobs:
-  compile:
+  compile-and-test:
     runs-on: ubuntu-latest
     name: Compile project
     steps:
@@ -21,29 +21,11 @@ jobs:
           distribution: 'corretto'
 
       - name: Compile project
-        run: chmod +x ./mvnw && ./mvnw clean compile
-  unit-tests:
-    runs-on: ubuntu-latest
-    name: Unit tests
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'corretto'
-
-      - name: Running Unit Tests
-        run: chmod +x ./mvnw && ./mvnw clean test
-
+        run: chmod +x ./mvnw && ./mvnw install package
   build:
     runs-on: ubuntu-latest
     name: Build backend
-    needs: [ compile, unit-tests ]
+    needs: [ compile-and-test ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
