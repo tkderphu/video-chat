@@ -14,7 +14,7 @@ ARG APP_VERSION=1.0.0
 WORKDIR /app
 COPY --from=build /build/target/video_chat-*.jar /app/
 
-EXPOSE 8088
+EXPOSE 8080
 
 ENV DB_URL=jdbc:mysql://app-mysql:3306/video_chat?createDatabaseIfNotExist=true
 
