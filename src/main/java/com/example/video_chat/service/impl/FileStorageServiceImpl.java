@@ -30,10 +30,10 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
         String url = PATH;
         File f;
-        if((f = new File(url)).exists() && f.mkdir());
+        if(!(f = new File(url)).exists() && f.mkdir());
         url += "/" + fileType.name();
 
-        if((f = new File(url)).exists() && f.mkdir());
+        if(!(f = new File(url)).exists() && f.mkdir());
 
         String fileExtension = getExtension(file.getOriginalFilename());
         String fileName = UUID.randomUUID() + fileExtension;

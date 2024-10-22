@@ -1,6 +1,9 @@
 package com.example.video_chat.service.impl;
 
+import com.example.video_chat.api.FileController;
 import com.example.video_chat.common.SystemUtils;
+import com.example.video_chat.domain.entities.FileEntity;
+import com.example.video_chat.domain.entities.FileType;
 import com.example.video_chat.domain.entities.Token;
 import com.example.video_chat.domain.entities.User;
 import com.example.video_chat.domain.modelviews.request.LoginRequest;
@@ -12,6 +15,7 @@ import com.example.video_chat.domain.modelviews.views.UserModelView;
 import com.example.video_chat.handler.exception.GeneralException;
 import com.example.video_chat.repository.TokenRepository;
 import com.example.video_chat.repository.UserRepository;
+import com.example.video_chat.service.FileStorageService;
 import com.example.video_chat.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +26,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.example.video_chat.domain.entities.FileType.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -33,15 +41,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final TokenRepository tokenRepository;
+    private final FileStorageService fileStorageService;
     @Value("${auth.token.expired-time}")
     private long expiredTime;
 
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder encoder,
-                           TokenRepository tokenRepository) {
+                           TokenRepository tokenRepository,
+                           FileStorageService fileStorageService) {
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.tokenRepository = tokenRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -67,12 +78,14 @@ public class UserServiceImpl implements UserService {
                 user,
                 false);
 
-        this.tokenRepository.save(token);
+        user.setOnline(true);
 
+        this.tokenRepository.save(token);
+        this.userRepository.save(user);
         return new ApiResponse<>("User login successfully",
                 200,
                 0,
-                new AuthResponse(user.getId(), token.getUuid(), token.getExpiredTime(), user.getFullName()));
+                new AuthResponse(token.getUuid(), token.getExpiredTime(), user));
 
     }
 
@@ -111,6 +124,32 @@ public class UserServiceImpl implements UserService {
                         .stream()
                         .map(UserModelView::new)
                         .collect(Collectors.toList())
+        );
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<?> uploadAvatar(MultipartFile file) {
+        User user = userRepository
+                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .get();
+        FileEntity fileEntity = fileStorageService.save(
+                file,
+                AVATAR
+        );
+
+        user.setAvatar(MvcUriComponentsBuilder.fromMethodName(
+                FileController.class,
+                "readFile",
+                fileEntity.getUrl()
+        ).toUriString());
+
+        userRepository.save(user);
+        return new ApiResponse<>(
+                "uploaded avatar",
+                200,
+                0,
+                new UserModelView(user)
         );
     }
 }

@@ -1,25 +1,23 @@
 package com.example.video_chat.domain.modelviews.response;
 
+import com.example.video_chat.domain.entities.User;
+import com.example.video_chat.domain.modelviews.views.UserModelView;
+
 public class AuthResponse {
-    private Long id;
     private String uuid;
     private long expiredTime;
-    private String fullName;
+    private UserModelView info;
 
     public AuthResponse() {
 
     }
 
-    public AuthResponse(Long id, String uuid, long expiredTime, String fullName) {
-        this.id = id;
+    public AuthResponse(String uuid, long expiredTime, User info) {
         this.uuid = uuid;
         this.expiredTime = expiredTime;
-        this.fullName = fullName;
+        this.info = new UserModelView(info);
     }
 
-    public Long getId() {
-        return id;
-    }
 
     public String getUuid() {
         return uuid;
@@ -29,7 +27,7 @@ public class AuthResponse {
         return expiredTime;
     }
 
-    public String getFullName() {
-        return fullName;
+    public UserModelView getInfo() {
+        return info;
     }
 }

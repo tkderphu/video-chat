@@ -2,19 +2,24 @@ package com.example.video_chat.domain.modelviews.views;
 
 import com.example.video_chat.common.FileEntityConvert;
 import com.example.video_chat.domain.entities.Message;
+import com.example.video_chat.domain.entities.Message.MessageType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageModelView {
-    private long id;
-    private Date createdDate;
+    private Long id;
+    private LocalDateTime createdDate;
     private UserModelView fromUser;
     private ConversationModelView toConversation;
     private String content;
     private List<String> detachImages;
-    private Message.MessageType messageType;
+    private MessageType messageType;
+    public MessageModelView() {
+
+    }
     public MessageModelView(Message message) {
         this.id = message.getId();
         this.createdDate = message.getCreatedDate();
@@ -30,15 +35,19 @@ public class MessageModelView {
         return id;
     }
 
-    public Date getCreatedDate() {
+    public LocalDateTime getCreatedDate() {
         return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
     }
 
     public UserModelView getFromUser() {
         return fromUser;
     }
 
-    public Message.MessageType getMessageType() {
+    public MessageType getMessageType() {
         return messageType;
     }
 
@@ -53,4 +62,5 @@ public class MessageModelView {
     public List<String> getDetachImages() {
         return detachImages;
     }
+
 }

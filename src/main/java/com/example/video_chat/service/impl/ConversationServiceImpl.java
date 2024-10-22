@@ -20,6 +20,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +36,7 @@ public class ConversationServiceImpl implements ConversationService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+
     public ConversationServiceImpl(UserRepository userRepository,
                                    ConversationRepository conversationRepository,
                                    MessageRepository messageRepository,
@@ -128,6 +132,16 @@ public class ConversationServiceImpl implements ConversationService {
                             );
                             return conv;
                         })
+                        .sorted((con1, con2) -> {
+                            if (con1.getRecentMessage() != null && con2.getRecentMessage() != null) {
+                                return con2.getRecentMessage().getCreatedDate()
+                                        .compareTo(con1.getRecentMessage().getCreatedDate());
+                            } else if (con1.getRecentMessage() != null) {
+                                return con1.getRecentMessage().getCreatedDate().compareTo(LocalDateTime.now());
+                            } else {
+                                return 0;
+                            }
+                        })
                         .collect(Collectors.toList())
         );
     }
@@ -147,5 +161,29 @@ public class ConversationServiceImpl implements ConversationService {
                 0,
                 new ConversationModelView(conversation)
         );
+    }
+
+    @Override
+    public ApiResponse<?> checkConversationContainsCurrentUser(Long conversationId) {
+        User user = userRepository
+                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .get();
+        Conversation conversation = conversationRepository
+                .findById(conversationId)
+                .orElseThrow(
+                        () -> new GeneralException("Conversation not found")
+                );
+        ApiResponse<Object> apiResponse = new ApiResponse<>(
+                "check conversation has contains user",
+                200,
+                0,
+                null
+        );
+        if(conversation.getUsers().contains(user)) {
+            apiResponse.setData(true);
+        } else {
+            apiResponse.setData(false);
+        }
+        return apiResponse;
     }
 }

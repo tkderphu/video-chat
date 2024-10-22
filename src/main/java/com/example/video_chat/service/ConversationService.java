@@ -15,4 +15,6 @@ public interface ConversationService {
     );
 
     ApiResponse<ConversationModelView> findPrivateConversation(Long userId);
+
+    ApiResponse<?> checkConversationContainsCurrentUser(Long conversationId);
 }

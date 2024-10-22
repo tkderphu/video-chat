@@ -63,6 +63,10 @@ public class User extends BaseEntity implements UserDetails{
         return firstName + " " + lastName;
     }
 
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()
@@ -81,6 +85,9 @@ public class User extends BaseEntity implements UserDetails{
         return email;
     }
 
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 
     @Override
     public boolean equals(Object obj) {

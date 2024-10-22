@@ -7,9 +7,11 @@ public class UserModelView  {
     private long id;
     private String avatar;
     public UserModelView(User user) {
-        this.fullName = user.getFullName();
-        this.id = user.getId();
-        this.avatar = user.getAvatar();
+        if(user != null) {
+            this.fullName = user.getFullName();
+            this.id = user.getId();
+            this.avatar = user.getAvatar();
+        }
     }
 
 

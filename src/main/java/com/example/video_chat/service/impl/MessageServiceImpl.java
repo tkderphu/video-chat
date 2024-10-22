@@ -2,6 +2,7 @@ package com.example.video_chat.service.impl;
 
 import com.example.video_chat.common.SystemUtils;
 import com.example.video_chat.domain.entities.Conversation;
+import com.example.video_chat.domain.entities.FileType;
 import com.example.video_chat.domain.entities.Message;
 import com.example.video_chat.domain.entities.User;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
@@ -12,6 +13,7 @@ import com.example.video_chat.handler.exception.GeneralException;
 import com.example.video_chat.repository.ConversationRepository;
 import com.example.video_chat.repository.MessageRepository;
 import com.example.video_chat.repository.UserRepository;
+import com.example.video_chat.service.FileStorageService;
 import com.example.video_chat.service.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.video_chat.domain.entities.Conversation.ConversationType.PRIVATE;
+import static com.example.video_chat.domain.entities.FileType.MESSAGE;
 import static com.example.video_chat.domain.entities.Message.MessageType.TEXT;
 import static com.example.video_chat.domain.entities.Message.MessageType.VIDEO;
 
@@ -40,15 +43,18 @@ public class MessageServiceImpl implements MessageService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final FileStorageService fileStorageService;
 
     public MessageServiceImpl(UserRepository userRepository,
                               ConversationRepository conversationRepository,
                               MessageRepository messageRepository,
-                              SimpMessagingTemplate simpMessagingTemplate) {
+                              SimpMessagingTemplate simpMessagingTemplate,
+                              FileStorageService fileStorageService) {
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.fileStorageService = fileStorageService;
     }
 
 
@@ -78,12 +84,21 @@ public class MessageServiceImpl implements MessageService {
         } else if (!conversation.getUsers().contains(fromUser)) {
             throw new GeneralException("you haven't added to group yet");
         }
+
+
+
         Message message = new Message(
                 fromUser,
                 request.getContent(),
                 request.isVideo() ? VIDEO : TEXT,
                 conversation
         );
+
+        if(files != null) {
+            files.forEach(file -> {
+                message.addFile(this.fileStorageService.save(file, MESSAGE));
+            });
+        }
         this.messageRepository.save(message);
         final ApiResponse<MessageModelView> response = new ApiResponse<>(
                 "CREATE MESSAGE",

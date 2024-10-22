@@ -2,6 +2,7 @@ package com.example.video_chat.domain.entities;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -54,6 +55,14 @@ public class    Message extends BaseEntity{
 
     public MessageType getMessageType() {
         return messageType;
+    }
+
+
+    public void addFile(FileEntity file) {
+        if(detachImages == null) {
+            detachImages = new ArrayList<>();
+        }
+        detachImages.add(file);
     }
 
 

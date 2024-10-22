@@ -8,6 +8,8 @@ import java.util.Set;
 @Entity
 @Table(name = "conversations")
 public class Conversation extends BaseEntity {
+
+
     @Column(name = "name")
     private String name;
 
@@ -72,9 +74,12 @@ public class Conversation extends BaseEntity {
     }
 
     public boolean status() {
-        return this.users
-                .stream()
-                .anyMatch(s -> s.isOnline());
+        if(conversationType == ConversationType.PUBLIC) {
+            return this.users
+                    .stream()
+                    .anyMatch(s -> s.isOnline());
+        }
+        return getUserPrivateConversation().isOnline();
     }
 
     public String imageRepresent() {

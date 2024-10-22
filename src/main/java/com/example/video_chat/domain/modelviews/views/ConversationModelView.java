@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConversationModelView {
-    private long id;
+    private Long id;
     private String displayName;
     private String imageRepresent;
     private boolean status;
@@ -14,11 +14,13 @@ public class ConversationModelView {
     private MessageModelView recentMessage;
 
     public ConversationModelView(Conversation conversation) {
-        this.id = conversation.getId();
-        this.displayName = conversation.displayName();
-        this.imageRepresent = conversation.imageRepresent();
-        this.status = conversation.status();
-        this.scope = conversation.getConversationType();
+        if(conversation != null) {
+            this.id = conversation.getId();
+            this.displayName = conversation.displayName();
+            this.imageRepresent = conversation.imageRepresent();
+            this.status = conversation.status();
+            this.scope = conversation.getConversationType();
+        }
     }
 
     public long getId() {

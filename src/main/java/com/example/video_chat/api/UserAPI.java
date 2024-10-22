@@ -6,6 +6,7 @@ import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.service.UserService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -35,6 +36,11 @@ public class UserAPI {
             @RequestParam(value = "limit", defaultValue = "30") int limit
     ) {
         return this.userService.getAllUser(page, limit);
+    }
+
+    @PostMapping("/uploads/avatar")
+    public ApiResponse<?> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        return userService.uploadAvatar(file);
     }
 
 }
