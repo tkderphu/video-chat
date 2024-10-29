@@ -21,3 +21,6 @@ spring:
 auth:
   token:
     expired-time: 86400000 # 1 minute
+
+web:
+  domain: viosmash.site
