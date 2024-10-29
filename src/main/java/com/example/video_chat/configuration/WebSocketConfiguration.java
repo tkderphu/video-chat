@@ -20,9 +20,8 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("http://localhost:4200",
                         "http://localhost:4200/",
-                        "http://103.109.37.30/",
-                        "http://103.109.37.30",
-                        "**")
+                        "http://app-ui/",
+                        "http://app-ui")
                 .withSockJS();
     }
 

@@ -36,6 +36,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         if(!(f = new File(url)).exists() && f.mkdir());
 
         String fileExtension = getExtension(file.getOriginalFilename());
+
         String fileName = UUID.randomUUID() + fileExtension;
 
         url += "/" + fileName;

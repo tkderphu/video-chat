@@ -3,8 +3,8 @@
 spring:
   datasource: #database
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: root
+    username: project
+    password: project
     url: jdbc:mysql://localhost:3306/video_chat?createDatabaseIfNotExist=true
   servlet:
     multipart: #size for file
