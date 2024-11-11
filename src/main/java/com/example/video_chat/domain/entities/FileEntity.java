@@ -1,5 +1,6 @@
 package com.example.video_chat.domain.entities;
 
+import com.example.video_chat.domain.enums.FileType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

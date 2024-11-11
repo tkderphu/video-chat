@@ -1,6 +1,6 @@
 package com.example.video_chat.service.impl;
 
-import com.example.video_chat.common.SystemUtils;
+import com.example.video_chat.common.SecurityUtils;
 import com.example.video_chat.domain.entities.Conversation;
 import com.example.video_chat.domain.entities.Message;
 import com.example.video_chat.domain.entities.User;
@@ -8,7 +8,6 @@ import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.domain.modelviews.views.ConversationModelView;
-import com.example.video_chat.domain.modelviews.views.MessageModelView;
 import com.example.video_chat.handler.exception.GeneralException;
 import com.example.video_chat.repository.ConversationRepository;
 import com.example.video_chat.repository.MessageRepository;
@@ -20,14 +19,12 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.video_chat.domain.entities.Conversation.ConversationType.PUBLIC;
-import static com.example.video_chat.domain.entities.Message.MessageType.TEXT;
+import static com.example.video_chat.domain.enums.MessageType.TEXT;
 
 @Service
 public class ConversationServiceImpl implements ConversationService {
@@ -52,7 +49,7 @@ public class ConversationServiceImpl implements ConversationService {
             ConversationRequest request
     ) {
         User fromUser = userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .findByEmailIgnoreCase(SecurityUtils.getUsername())
                 .get();
         if (request == null || request.getUserIds().size() < 2) {
             throw new GeneralException("Size of group must greater than 2");
@@ -108,7 +105,7 @@ public class ConversationServiceImpl implements ConversationService {
     ) {
         Page<Conversation> pageConversation = this.conversationRepository
                 .findAllByUserUsername(
-                        SystemUtils.getUsername(),
+                        SecurityUtils.getUsername(),
                         PageRequest.of(page - 1, limit)
                 );
         return new ApiListResponse<>(
@@ -121,27 +118,8 @@ public class ConversationServiceImpl implements ConversationService {
                 pageConversation
                         .getContent()
                         .stream()
-                        .map(con -> {
-                            ConversationModelView conv =
-                                    new ConversationModelView(con);
-                            conv.setRecentMessage(
-                                    this
-                                            .messageRepository
-                                            .findLatestMessageByConversationId(con.getId())
-                                            .orElse(null)
-                            );
-                            return conv;
-                        })
-                        .sorted((con1, con2) -> {
-                            if (con1.getRecentMessage() != null && con2.getRecentMessage() != null) {
-                                return con2.getRecentMessage().getCreatedDate()
-                                        .compareTo(con1.getRecentMessage().getCreatedDate());
-                            } else if (con1.getRecentMessage() != null) {
-                                return con1.getRecentMessage().getCreatedDate().compareTo(LocalDateTime.now());
-                            } else {
-                                return 0;
-                            }
-                        })
+                        .map(ConversationModelView::new)
+                        .sorted((c1, c2) -> c2.getRecentMessage().getCreatedDate().compareTo(c1.getRecentMessage().getCreatedDate()))
                         .collect(Collectors.toList())
         );
     }
@@ -149,7 +127,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public ApiResponse<ConversationModelView> findPrivateConversation(Long userId) {
         User user = userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .findByEmailIgnoreCase(SecurityUtils.getUsername())
                 .get();
 
         Conversation conversation = this.conversationRepository
@@ -166,7 +144,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public ApiResponse<?> checkConversationContainsCurrentUser(Long conversationId) {
         User user = userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .findByEmailIgnoreCase(SecurityUtils.getUsername())
                 .get();
         Conversation conversation = conversationRepository
                 .findById(conversationId)

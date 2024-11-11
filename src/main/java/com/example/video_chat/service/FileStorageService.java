@@ -1,6 +1,6 @@
 package com.example.video_chat.service;
 import com.example.video_chat.domain.entities.FileEntity;
-import com.example.video_chat.domain.entities.FileType;
+import com.example.video_chat.domain.enums.FileType;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 

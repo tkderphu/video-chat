@@ -2,11 +2,10 @@ package com.example.video_chat.domain.modelviews.views;
 
 import com.example.video_chat.common.FileEntityConvert;
 import com.example.video_chat.domain.entities.Message;
-import com.example.video_chat.domain.entities.Message.MessageType;
+import com.example.video_chat.domain.enums.MessageType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MessageModelView {

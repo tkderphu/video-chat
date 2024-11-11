@@ -1,6 +1,6 @@
 package com.example.video_chat.domain.entities;
 
-import com.example.video_chat.common.SystemUtils;
+import com.example.video_chat.common.SecurityUtils;
 import jakarta.persistence.*;
 
 import java.util.Set;
@@ -93,7 +93,7 @@ public class Conversation extends BaseEntity {
     private User getUserPrivateConversation() {
         return users.stream()
 
-                .filter(u -> !u.getUsername().equals(SystemUtils.getUsername()))
+                .filter(u -> !u.getUsername().equals(SecurityUtils.getUsername()))
                 .findFirst()
                 .get();
     }

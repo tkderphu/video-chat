@@ -1,11 +1,13 @@
 package com.example.video_chat.domain.entities;
 
+import com.example.video_chat.domain.enums.Role;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,11 +24,8 @@ public class User extends BaseEntity implements UserDetails{
 
     private String avatar;
 
-    @ManyToMany
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles;
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     @ManyToMany(mappedBy = "users")
     private Set<Conversation> conversations;
@@ -69,9 +68,7 @@ public class User extends BaseEntity implements UserDetails{
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-                .map(s -> new SimpleGrantedAuthority("ROLE_"+ s.getName()))
-                .collect(Collectors.toList());
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override

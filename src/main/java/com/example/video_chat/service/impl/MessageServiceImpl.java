@@ -1,8 +1,7 @@
 package com.example.video_chat.service.impl;
 
-import com.example.video_chat.common.SystemUtils;
+import com.example.video_chat.common.SecurityUtils;
 import com.example.video_chat.domain.entities.Conversation;
-import com.example.video_chat.domain.entities.FileType;
 import com.example.video_chat.domain.entities.Message;
 import com.example.video_chat.domain.entities.User;
 import com.example.video_chat.domain.modelviews.request.MessageRequest;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +30,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.video_chat.domain.entities.Conversation.ConversationType.PRIVATE;
-import static com.example.video_chat.domain.entities.FileType.MESSAGE;
-import static com.example.video_chat.domain.entities.Message.MessageType.TEXT;
-import static com.example.video_chat.domain.entities.Message.MessageType.VIDEO;
+import static com.example.video_chat.domain.enums.FileType.MESSAGE;
+import static com.example.video_chat.domain.enums.MessageType.TEXT;
+import static com.example.video_chat.domain.enums.MessageType.VIDEO;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -63,7 +61,7 @@ public class MessageServiceImpl implements MessageService {
     public ApiResponse<?> createMessage(MessageRequest request,
                                         List<MultipartFile> files) {
         User fromUser = userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .findByEmailIgnoreCase(SecurityUtils.getUsername())
                 .get();
         Conversation conversation = this.conversationRepository
                 .findById(request.getDestId())
@@ -125,7 +123,7 @@ public class MessageServiceImpl implements MessageService {
             int limit
     ) {
         User fromUser = userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .findByEmailIgnoreCase(SecurityUtils.getUsername())
                 .get();
         Page<Message> page = this.messageRepository.findAllByConversationId(
                 conversationId,

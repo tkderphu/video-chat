@@ -1,5 +1,6 @@
 package com.example.video_chat.domain.entities;
 
+import com.example.video_chat.domain.enums.MessageType;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -65,9 +66,4 @@ public class    Message extends BaseEntity{
         detachImages.add(file);
     }
 
-
-    public enum MessageType {
-        VIDEO,
-        TEXT
-    }
 }

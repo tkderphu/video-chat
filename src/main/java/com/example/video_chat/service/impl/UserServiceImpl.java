@@ -1,9 +1,8 @@
 package com.example.video_chat.service.impl;
 
-import com.example.video_chat.api.FileController;
-import com.example.video_chat.common.SystemUtils;
+import com.example.video_chat.controller.FileController;
+import com.example.video_chat.common.SecurityUtils;
 import com.example.video_chat.domain.entities.FileEntity;
-import com.example.video_chat.domain.entities.FileType;
 import com.example.video_chat.domain.entities.Token;
 import com.example.video_chat.domain.entities.User;
 import com.example.video_chat.domain.modelviews.request.LoginRequest;
@@ -32,7 +31,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.example.video_chat.domain.entities.FileType.*;
+import static com.example.video_chat.domain.enums.FileType.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -109,10 +108,10 @@ public class UserServiceImpl implements UserService {
     public ApiListResponse<?> getAllUser(int page, int limit) {
         Page<User> userPage = this.userRepository
                 .findAllByEmailIsNotContainingIgnoreCase(
-                        SystemUtils.getUsername(),
+                        SecurityUtils.getUsername(),
                         PageRequest.of(page - 1, limit)
                 );
-        LOG.info(SystemUtils.getUsername() + " get all user");
+        LOG.info(SecurityUtils.getUsername() + " get all user");
         return new ApiListResponse<>(
                 "get all user",
                 200,
@@ -131,7 +130,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public ApiResponse<?> uploadAvatar(MultipartFile file) {
         User user = userRepository
-                .findByEmailIgnoreCase(SystemUtils.getUsername())
+                .findByEmailIgnoreCase(SecurityUtils.getUsername())
                 .get();
         FileEntity fileEntity = fileStorageService.save(
                 file,

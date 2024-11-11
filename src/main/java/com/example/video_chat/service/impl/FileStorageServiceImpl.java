@@ -1,11 +1,9 @@
 package com.example.video_chat.service.impl;
 import com.example.video_chat.handler.exception.FileNotFoundException;
 import com.example.video_chat.handler.exception.GeneralException;
-import com.example.video_chat.repository.FileRepository;
 import com.example.video_chat.domain.entities.FileEntity;
-import com.example.video_chat.domain.entities.FileType;
+import com.example.video_chat.domain.enums.FileType;
 import com.example.video_chat.service.FileStorageService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
