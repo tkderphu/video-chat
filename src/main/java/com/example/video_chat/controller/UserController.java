@@ -11,11 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v1/users")
 @CrossOrigin("*")
-public class UserAPI {
+public class UserController {
 
     private final UserService userService;
 
-    public UserAPI(UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 

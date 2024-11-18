@@ -20,15 +20,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/messenger")
 @CrossOrigin("*")
-public class MessengerAPI {
+public class MessengerController {
 
     private final MessageService messengerService;
     private final ConversationService conversationService;
     private final ObjectMapper objectMapper;
 
-    public MessengerAPI(MessageService messengerService,
-                        ConversationService conversationService,
-                        ObjectMapper objectMapper) {
+    public MessengerController(MessageService messengerService,
+                               ConversationService conversationService,
+                               ObjectMapper objectMapper) {
         this.messengerService = messengerService;
         this.conversationService = conversationService;
         this.objectMapper = objectMapper;
