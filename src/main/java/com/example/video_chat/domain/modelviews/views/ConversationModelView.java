@@ -1,8 +1,12 @@
 package com.example.video_chat.domain.modelviews.views;
 
+import com.example.video_chat.common.SecurityUtils;
 import com.example.video_chat.domain.entities.Conversation;
 import com.example.video_chat.domain.entities.Message;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConversationModelView {
@@ -12,7 +16,9 @@ public class ConversationModelView {
     private boolean status;
     private Conversation.ConversationType scope;
     private MessageModelView recentMessage;
+    private Set<UserModelView> members;
 
+    private boolean owner;
     public ConversationModelView(Conversation conversation) {
         if(conversation != null) {
             this.id = conversation.getId();
@@ -20,6 +26,8 @@ public class ConversationModelView {
             this.imageRepresent = conversation.imageRepresent();
             this.status = conversation.status();
             this.scope = conversation.getConversationType();
+            this.owner = conversation.getCreatedBy().compareTo(SecurityUtils.getUsername()) == 0;
+            this.members = conversation.getUsers().stream().map(s -> new UserModelView(s)).collect(Collectors.toSet());
         }
     }
 
@@ -45,6 +53,14 @@ public class ConversationModelView {
 
     public Conversation.ConversationType getScope() {
         return scope;
+    }
+
+    public Set<UserModelView> getMembers() {
+        return members;
+    }
+
+    public boolean isOwner() {
+        return owner;
     }
 
     public void setRecentMessage(Message recentMessage) {

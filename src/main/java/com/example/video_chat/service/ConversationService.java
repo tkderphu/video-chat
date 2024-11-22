@@ -17,4 +17,9 @@ public interface ConversationService {
     ApiResponse<ConversationModelView> findPrivateConversation(Long userId);
 
     ApiResponse<?> checkConversationContainsCurrentUser(Long conversationId);
+
+    ApiResponse<?> removeUserInConversation(Long conversationId, Long userId);
+
+    ApiResponse<?> deleteById(Long id);
+
 }

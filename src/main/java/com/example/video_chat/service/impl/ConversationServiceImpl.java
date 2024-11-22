@@ -8,6 +8,7 @@ import com.example.video_chat.domain.modelviews.request.ConversationRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.domain.modelviews.views.ConversationModelView;
+import com.example.video_chat.domain.modelviews.views.MessageModelView;
 import com.example.video_chat.handler.exception.GeneralException;
 import com.example.video_chat.repository.ConversationRepository;
 import com.example.video_chat.repository.MessageRepository;
@@ -18,8 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -118,7 +119,11 @@ public class ConversationServiceImpl implements ConversationService {
                 pageConversation
                         .getContent()
                         .stream()
-                        .map(ConversationModelView::new)
+                        .map(conv -> {
+                            var c = new ConversationModelView(conv);
+                            c.setRecentMessage(messageRepository.findLatestMessageByConversationId(c.getId()).get());
+                            return c;
+                        })
                         .sorted((c1, c2) -> c2.getRecentMessage().getCreatedDate().compareTo(c1.getRecentMessage().getCreatedDate()))
                         .collect(Collectors.toList())
         );
@@ -163,5 +168,49 @@ public class ConversationServiceImpl implements ConversationService {
             apiResponse.setData(false);
         }
         return apiResponse;
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<?> removeUserInConversation(Long conversationId, Long userId) {
+        Conversation conversation = this.conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new GeneralException("not found"));
+        if(conversation.getCreatedBy().compareTo(SecurityUtils.getUsername()) != 0) {
+            throw new GeneralException("access denied");
+        }
+        User user = this.userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException("not found user"));
+        User ownerConversation = SecurityUtils.getLoginUser();
+        conversation.getUsers().remove(user);
+
+        Message message = new Message(
+                ownerConversation,
+                String.format("<<----------%s da duoi %s ra khoi nhom--------->>", ownerConversation.getFullName(), user.getFullName()),
+                TEXT,
+                conversation
+        );
+        this.messageRepository.save(message);
+
+        conversation.getUsers()
+                .forEach(u -> {
+                    this.simpMessagingTemplate.convertAndSend(
+                            "/topic/private/messages/conversation/user/" + u.getId(),
+                           new MessageModelView(message)
+                    );
+                });
+        return new ApiResponse<>(
+                "remove ok",
+                200,
+                0,
+                null
+        );
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<?> deleteById(Long id) {
+        this.messageRepository.deleteAllByConversationId(id);
+        this.conversationRepository.deleteById(id);
+        return new ApiResponse<>("disband ok", 200, 0, null);
     }
 }

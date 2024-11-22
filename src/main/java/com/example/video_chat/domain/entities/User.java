@@ -90,7 +90,7 @@ public class User extends BaseEntity implements UserDetails{
     public boolean equals(Object obj) {
         if(obj instanceof User) {
             User user = (User) obj;
-            if(this.email.compareTo(user.email) == 0) {
+            if(this.email.compareTo(user.email) == 0 || this.getId().compareTo(user.getId()) == 0) {
                 return true;
             }
         }

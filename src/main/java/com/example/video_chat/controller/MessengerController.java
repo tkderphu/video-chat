@@ -116,4 +116,15 @@ public class MessengerController {
         return conversationService.checkConversationContainsCurrentUser(conversationId);
     }
 
+
+    @DeleteMapping("/conversations/{conversationId}/users/{userId}")
+    public ApiResponse<?> removeUserInConversation(@PathVariable("conversationId") Long conversationId,
+                                                   @PathVariable("userId") Long userId) {
+        return conversationService.removeUserInConversation(conversationId, userId);
+    }
+
+    @DeleteMapping("/conversations/{conversationId}")
+    public ApiResponse<?> disbandConversation(@PathVariable("conversationId") Long conversationId) {
+        return conversationService.deleteById(conversationId);
+    }
 }
