@@ -3,7 +3,7 @@ name: Build & Deploy Web Application Video-Chat
 on:
   push:
     branches:
-      - M103-fix-l2
+      - final
 jobs:
   compile:
     runs-on: ubuntu-latest
