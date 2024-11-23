@@ -9,7 +9,7 @@ public class MessageRequest {
     private Long destId;
     private String content;
     private boolean video;
-
+    private boolean user;
     public MessageRequest(Long destId, String content, boolean video) {
         this.destId = destId;
         this.content = content;
@@ -37,6 +37,14 @@ public class MessageRequest {
 
     public String getContent() {
         return content;
+    }
+
+    public void setUser(boolean user) {
+        this.user = user;
+    }
+
+    public boolean isUser() {
+        return user;
     }
 
     public void setContent(String content) {

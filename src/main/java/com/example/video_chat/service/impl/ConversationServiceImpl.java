@@ -12,6 +12,7 @@ import com.example.video_chat.domain.modelviews.views.MessageModelView;
 import com.example.video_chat.handler.exception.GeneralException;
 import com.example.video_chat.repository.ConversationRepository;
 import com.example.video_chat.repository.MessageRepository;
+import com.example.video_chat.repository.PinMessageRepository;
 import com.example.video_chat.repository.UserRepository;
 import com.example.video_chat.service.ConversationService;
 import org.springframework.data.domain.Page;
@@ -35,15 +36,17 @@ public class ConversationServiceImpl implements ConversationService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final PinMessageRepository pinMessageRepository;
 
     public ConversationServiceImpl(UserRepository userRepository,
                                    ConversationRepository conversationRepository,
                                    MessageRepository messageRepository,
-                                   SimpMessagingTemplate simpMessagingTemplate) {
+                                   SimpMessagingTemplate simpMessagingTemplate, PinMessageRepository pinMessageRepository) {
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.simpMessagingTemplate = simpMessagingTemplate;
+        this.pinMessageRepository = pinMessageRepository;
     }
 
     @Override
@@ -196,8 +199,16 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     @Transactional
     public ApiResponse<?> deleteById(Long id) {
+        Conversation conversation = this.conversationRepository.findById(id).orElseThrow(() -> new GeneralException("not found"));
+        this.pinMessageRepository.deleteAllByConversationId(id);
         this.messageRepository.deleteAllByConversationId(id);
         this.conversationRepository.deleteById(id);
+        conversation.getUsers().forEach(user -> {
+            this.simpMessagingTemplate.convertAndSend(
+                    "/topic/private/conversation/delete/user/" + user.getId(),
+                    conversation.getId()
+            );
+        });
         return new ApiResponse<>("disband ok", 200, 0, null);
     }
 

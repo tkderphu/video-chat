@@ -106,11 +106,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ApiListResponse<?> getAllUser(int page, int limit) {
-        Page<User> userPage = this.userRepository
-                .findAllByEmailIsNotContainingIgnoreCase(
-                        SecurityUtils.getUsername(),
-                        PageRequest.of(page - 1, limit)
-                );
+        Page<User> userPage = this.userRepository.findAll(PageRequest.of(page - 1, limit));
         LOG.info(SecurityUtils.getUsername() + " get all user");
         return new ApiListResponse<>(
                 "get all user",
@@ -121,6 +117,7 @@ public class UserServiceImpl implements UserService {
                 limit,
                 userPage.getContent()
                         .stream()
+                        .filter(s -> s.getId().compareTo(SecurityUtils.getLoginUserId()) != 0)
                         .map(UserModelView::new)
                         .collect(Collectors.toList())
         );

@@ -60,15 +60,10 @@ public class MessageServiceImpl implements MessageService {
     @Transactional
     public ApiResponse<?> createMessage(MessageRequest request,
                                         List<MultipartFile> files) {
-        User fromUser = userRepository
-                .findByEmailIgnoreCase(SecurityUtils.getUsername())
-                .get();
-        Conversation conversation = this.conversationRepository
-                .findById(request.getDestId())
-                .orElse(null);
+        User fromUser = SecurityUtils.getLoginUser();
+        Conversation conversation = null;
 
-
-        if (conversation == null) {
+        if (request.isUser()) {
             conversation = new Conversation(
                     new HashSet<>(Set.of(
                             fromUser,
@@ -79,11 +74,14 @@ public class MessageServiceImpl implements MessageService {
                     PRIVATE
             );
             this.conversationRepository.save(conversation);
-        } else if (!conversation.getUsers().contains(fromUser)) {
-            throw new GeneralException("you haven't added to group yet");
+        } else{
+            conversation = conversationRepository.findById(request.getDestId())
+                    .orElseThrow(() -> new GeneralException("not found"));
         }
 
-
+        if (!conversation.getUsers().stream().anyMatch(s -> s.getId().compareTo(fromUser.getId()) == 0)) {
+            throw new GeneralException("you haven't added to group yet");
+        }
 
         Message message = new Message(
                 fromUser,

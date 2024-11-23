@@ -1,5 +1,6 @@
 package com.example.video_chat.domain.modelviews.views;
 
+import com.example.video_chat.common.CollUtils;
 import com.example.video_chat.common.SecurityUtils;
 import com.example.video_chat.domain.entities.Conversation;
 import com.example.video_chat.domain.entities.Message;
@@ -28,8 +29,8 @@ public class ConversationModelView {
             this.status = conversation.status();
             this.scope = conversation.getConversationType();
             this.owner = conversation.getCreatedBy().compareTo(SecurityUtils.getUsername()) == 0;
-            this.members = conversation.getUsers().stream().map(s -> new UserModelView(s)).collect(Collectors.toSet());
-            this.pinMessages = conversation.getPinMessages().stream().map(PinMessageModelView::new).collect(Collectors.toList());
+            this.members = CollUtils.toSet(conversation.getUsers(), UserModelView::new);
+            this.pinMessages = CollUtils.toList(conversation.getPinMessages(), PinMessageModelView::new);
         }
     }
 
