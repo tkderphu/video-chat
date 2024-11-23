@@ -5,6 +5,7 @@ import com.example.video_chat.domain.entities.Conversation;
 import com.example.video_chat.domain.entities.Message;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,7 @@ public class ConversationModelView {
     private Conversation.ConversationType scope;
     private MessageModelView recentMessage;
     private Set<UserModelView> members;
-
+    private List<PinMessageModelView> pinMessages;
     private boolean owner;
     public ConversationModelView(Conversation conversation) {
         if(conversation != null) {
@@ -28,6 +29,7 @@ public class ConversationModelView {
             this.scope = conversation.getConversationType();
             this.owner = conversation.getCreatedBy().compareTo(SecurityUtils.getUsername()) == 0;
             this.members = conversation.getUsers().stream().map(s -> new UserModelView(s)).collect(Collectors.toSet());
+            this.pinMessages = conversation.getPinMessages().stream().map(PinMessageModelView::new).collect(Collectors.toList());
         }
     }
 
@@ -57,6 +59,10 @@ public class ConversationModelView {
 
     public Set<UserModelView> getMembers() {
         return members;
+    }
+
+    public List<PinMessageModelView> getPinMessages() {
+        return pinMessages;
     }
 
     public boolean isOwner() {

@@ -5,8 +5,11 @@ import com.example.video_chat.domain.modelviews.request.MessageRequest;
 import com.example.video_chat.domain.modelviews.response.ApiListResponse;
 import com.example.video_chat.domain.modelviews.response.ApiResponse;
 import com.example.video_chat.domain.modelviews.views.ConversationModelView;
+import com.example.video_chat.domain.modelviews.views.MessageModelView;
+import com.example.video_chat.domain.modelviews.views.PinMessageModelView;
 import com.example.video_chat.service.ConversationService;
 import com.example.video_chat.service.MessageService;
+import com.example.video_chat.service.PinMessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,13 +28,16 @@ public class MessengerController {
     private final MessageService messengerService;
     private final ConversationService conversationService;
     private final ObjectMapper objectMapper;
+    private final PinMessageService pinMessageService;
 
     public MessengerController(MessageService messengerService,
                                ConversationService conversationService,
-                               ObjectMapper objectMapper) {
+                               ObjectMapper objectMapper,
+                               PinMessageService pinMessageService) {
         this.messengerService = messengerService;
         this.conversationService = conversationService;
         this.objectMapper = objectMapper;
+        this.pinMessageService = pinMessageService;
     }
 
     @PostMapping("/messages")
@@ -127,4 +133,25 @@ public class MessengerController {
     public ApiResponse<?> disbandConversation(@PathVariable("conversationId") Long conversationId) {
         return conversationService.deleteById(conversationId);
     }
+
+
+    @PutMapping("/conversations/{conversationId}/invite")
+    public ApiResponse<?> inviteUserToConversation(
+            @PathVariable("conversationId") Long conversationId,
+            @RequestParam("userId") Long userId) {
+        return conversationService.inviteUserToConversation(conversationId, userId);
+    }
+
+
+    @PostMapping("/messages/{messageId}/pin")
+    public ApiResponse<?> pinMessage(@PathVariable("messageId") Long messageId) {
+        return pinMessageService.createPinMessage(messageId);
+    }
+
+    @DeleteMapping("/messages/pin/{pinMessageId}")
+    public ApiResponse<?> removePinMessage(@PathVariable("pinMessageId") Long pinMessage) {
+         pinMessageService.delete(pinMessage);
+         return null;
+    }
+
 }

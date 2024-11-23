@@ -22,4 +22,5 @@ public interface ConversationService {
 
     ApiResponse<?> deleteById(Long id);
 
+    ApiResponse<?> inviteUserToConversation(Long conversationId, Long userId);
 }

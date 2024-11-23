@@ -22,6 +22,7 @@ public class    Message extends BaseEntity{
     private Conversation conversation;
     private boolean saw;
 
+
     public Message(User fromUser,
                    String content,
                    MessageType messageType,

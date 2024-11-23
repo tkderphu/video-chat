@@ -3,6 +3,8 @@ package com.example.video_chat.domain.entities;
 import com.example.video_chat.common.SecurityUtils;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -25,6 +27,8 @@ public class Conversation extends BaseEntity {
     private ConversationType conversationType;
 
 
+    @OneToMany(mappedBy = "conversation")
+    private List<PinMessage> pinMessages;
 
     public Conversation(Long id) {
         super(id);
@@ -80,6 +84,11 @@ public class Conversation extends BaseEntity {
                     .anyMatch(s -> s.isOnline());
         }
         return getUserPrivateConversation().isOnline();
+    }
+
+
+    public List<PinMessage> getPinMessages() {
+       return pinMessages;
     }
 
     public String imageRepresent() {

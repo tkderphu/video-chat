@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.example.video_chat.common.SecurityUtils.*;
 import static com.example.video_chat.domain.entities.Conversation.ConversationType.PUBLIC;
 import static com.example.video_chat.domain.enums.MessageType.TEXT;
 
@@ -50,7 +51,7 @@ public class ConversationServiceImpl implements ConversationService {
             ConversationRequest request
     ) {
         User fromUser = userRepository
-                .findByEmailIgnoreCase(SecurityUtils.getUsername())
+                .findByEmailIgnoreCase(getUsername())
                 .get();
         if (request == null || request.getUserIds().size() < 2) {
             throw new GeneralException("Size of group must greater than 2");
@@ -73,7 +74,7 @@ public class ConversationServiceImpl implements ConversationService {
         this.conversationRepository.save(conversation);
         Message message = new Message(fromUser,
                 String.format(
-                        "------->%s created a group which was %s <-------",
+                        "------->%s da tao nhom %s <-------",
                         fromUser.getFullName(),
                         request.getName()
                 ),
@@ -106,7 +107,7 @@ public class ConversationServiceImpl implements ConversationService {
     ) {
         Page<Conversation> pageConversation = this.conversationRepository
                 .findAllByUserUsername(
-                        SecurityUtils.getUsername(),
+                        getUsername(),
                         PageRequest.of(page - 1, limit)
                 );
         return new ApiListResponse<>(
@@ -132,7 +133,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public ApiResponse<ConversationModelView> findPrivateConversation(Long userId) {
         User user = userRepository
-                .findByEmailIgnoreCase(SecurityUtils.getUsername())
+                .findByEmailIgnoreCase(getUsername())
                 .get();
 
         Conversation conversation = this.conversationRepository
@@ -149,7 +150,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public ApiResponse<?> checkConversationContainsCurrentUser(Long conversationId) {
         User user = userRepository
-                .findByEmailIgnoreCase(SecurityUtils.getUsername())
+                .findByEmailIgnoreCase(getUsername())
                 .get();
         Conversation conversation = conversationRepository
                 .findById(conversationId)
@@ -175,29 +176,15 @@ public class ConversationServiceImpl implements ConversationService {
     public ApiResponse<?> removeUserInConversation(Long conversationId, Long userId) {
         Conversation conversation = this.conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new GeneralException("not found"));
-        if(conversation.getCreatedBy().compareTo(SecurityUtils.getUsername()) != 0) {
+        if(conversation.getCreatedBy().compareTo(getUsername()) != 0) {
             throw new GeneralException("access denied");
         }
         User user = this.userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException("not found user"));
-        User ownerConversation = SecurityUtils.getLoginUser();
         conversation.getUsers().remove(user);
+        this.conversationRepository.save(conversation);
+        sendMessage(conversation,  String.format("<<----------%s da duoi %s ra khoi nhom--------->>", getLoginUser().getFullName(), user.getFullName()));
 
-        Message message = new Message(
-                ownerConversation,
-                String.format("<<----------%s da duoi %s ra khoi nhom--------->>", ownerConversation.getFullName(), user.getFullName()),
-                TEXT,
-                conversation
-        );
-        this.messageRepository.save(message);
-
-        conversation.getUsers()
-                .forEach(u -> {
-                    this.simpMessagingTemplate.convertAndSend(
-                            "/topic/private/messages/conversation/user/" + u.getId(),
-                           new MessageModelView(message)
-                    );
-                });
         return new ApiResponse<>(
                 "remove ok",
                 200,
@@ -212,5 +199,35 @@ public class ConversationServiceImpl implements ConversationService {
         this.messageRepository.deleteAllByConversationId(id);
         this.conversationRepository.deleteById(id);
         return new ApiResponse<>("disband ok", 200, 0, null);
+    }
+
+    @Override
+    public ApiResponse<?> inviteUserToConversation(Long conversationId, Long userId) {
+        User user = this.userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException("not found user"));
+        Conversation conversation = this.conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new GeneralException("not found conversation"));
+        conversation.getUsers().add(user);
+        this.conversationRepository.save(conversation);
+        sendMessage(conversation, String.format("<---%s da moi %s tham gia vao nhom--->", getLoginUser().getFullName(), user.getFullName()));
+        return new ApiResponse<>("ok", 200, 0, null);
+    }
+
+    private void sendMessage(Conversation conversation, String text) {
+        Message message = new Message(
+                getLoginUser(),
+                text,
+                TEXT,
+                conversation
+        );
+        this.messageRepository.save(message);
+
+        conversation.getUsers()
+                .forEach(u -> {
+                    this.simpMessagingTemplate.convertAndSend(
+                            "/topic/private/messages/conversation/user/" + u.getId(),
+                            new MessageModelView(message)
+                    );
+                });
     }
 }
